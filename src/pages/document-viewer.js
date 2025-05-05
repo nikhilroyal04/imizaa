@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaArrowLeft, FaDownload } from 'react-icons/fa';
 
 export default function DocumentViewer() {
@@ -86,14 +87,17 @@ export default function DocumentViewer() {
                   </a>
                 </div>
               ) : (
-                <img
-                  src={url}
-                  alt={type || 'Document'}
-                  className="w-full h-auto"
-                  onLoad={() => setImageLoaded(true)}
-                  onError={() => setImageError(true)}
-                  style={{ display: imageLoaded ? 'block' : 'none' }}
-                />
+                <div className="relative w-full" style={{ height: '600px', display: imageLoaded ? 'block' : 'none' }}>
+                  <Image
+                    src={url}
+                    alt={type || 'Document'}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    onLoadingComplete={() => setImageLoaded(true)}
+                    onError={() => setImageError(true)}
+                    unoptimized={true} // For external URLs
+                  />
+                </div>
               )}
             </div>
           ) : (

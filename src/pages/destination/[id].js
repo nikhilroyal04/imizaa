@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // Sample destination data (same as in HomeCard.jsx)
 const destinationsData = [
@@ -213,15 +214,22 @@ export default function DestinationDetail() {
   <div className="flex flex-col md:flex-row w-full relative">
     {/* Left Side - Image */}
     <div className="w-full md:w-1/2 relative mb-6 md:mb-0">
-      <img
-        src={destination.image}
-        alt={destination.name}
-        className="w-full h-56 sm:h-64 md:h-72 object-cover rounded-2xl"
-        onError={(e) => {
-          e.target.onerror = null;
-          e.target.src = "https://via.placeholder.com/1200x600?text=Image+Not+Found";
-        }}
-      />
+      <div className="relative w-full h-56 sm:h-64 md:h-72 rounded-2xl overflow-hidden">
+        <Image
+          src={destination.image}
+          alt={destination.name}
+          fill
+          style={{ objectFit: 'cover' }}
+          onError={(e) => {
+            // Next/image doesn't support onError the same way as img
+            // This is a fallback but may not work as expected
+            const imgElement = e.target;
+            if (imgElement) {
+              imgElement.src = "https://via.placeholder.com/1200x600?text=Image+Not+Found";
+            }
+          }}
+        />
+      </div>
     </div>
 
     {/* Right Side - Text */}

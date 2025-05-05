@@ -78,7 +78,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkUserLoggedIn();
-  }, []); // Remove user from dependency array to prevent circular updates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally omitting user to prevent circular updates
 
   // Login user
   const login = async (email, password) => {

@@ -45,12 +45,12 @@ export default function Contact() {
           <div className="px-6 py-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">Contact Us</h1>
             <p className="text-gray-600 mb-8 text-center">
-              Have questions or feedback? We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.
+              Have questions or feedback? We&apos;d love to hear from you. Fill out the form below and we&apos;ll get back to you as soon as possible.
             </p>
 
             {submitSuccess && (
               <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                Thank you for your message! We'll get back to you soon.
+                Thank you for your message! We&apos;ll get back to you soon.
               </div>
             )}
 
