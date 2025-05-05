@@ -44,14 +44,14 @@ const destinationsData = [
     image: '/images/c.jpeg',
     price: '₹16095',
     fees: '(+999 Fees+Tax)',
-    processingTime: '150 days',
+    processingTime: "150 days",
     issuedRecently: 2,
-    type: 'Sticker',
+    type: "Sticker",
     category: ['popular']
   },
   {
     id: 5,
-    name: 'Japan',
+    name: "Japan",
     image: '/images/c.jpeg',
     price: '₹2500',
     fees: '(+299 Fees+Tax)',
@@ -142,6 +142,7 @@ const destinationsData = [
 export default function DestinationDetail() {
   const router = useRouter();
   const { id } = router.query;
+  const [selectedVisaType, setSelectedVisaType] = useState("All");
 
   // Find the destination by ID
   const destination = destinationsData.find(dest => dest.id === parseInt(id));
@@ -152,7 +153,7 @@ export default function DestinationDetail() {
       <div className="container mx-auto px-4 py-8 pt-20 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Loading destination details...</h1>
-          <p className="mb-4">If this page doesn't load, the destination may not exist.</p>
+          <p className="mb-4">If this page does not load, the destination may not exist.</p>
           <Link href="/" className="text-blue-600 hover:underline">
             Return to Home
           </Link>
@@ -165,9 +166,6 @@ export default function DestinationDetail() {
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + 15);
   const formattedDate = futureDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-
-  // Define visa types data
-  const [selectedVisaType, setSelectedVisaType] = useState("All");
 
   // Sample visa data for each destination
   const visaData = [
