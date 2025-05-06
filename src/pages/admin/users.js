@@ -26,18 +26,36 @@ export default function UsersAdmin() {
     const fetchUsers = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching users, user:', user ? `${user.username} (${user.role})` : 'No user');
+
+        // Get token from localStorage as a fallback
+        let authToken = '';
+        if (typeof window !== 'undefined') {
+          const userData = localStorage.getItem('user');
+          if (userData) {
+            const parsedUser = JSON.parse(userData);
+            if (parsedUser && parsedUser.token) {
+              authToken = parsedUser.token;
+            }
+          }
+        }
+
         const response = await fetch('/api/admin/users', {
           credentials: 'include', // Include cookies in the request
           headers: {
             'Cache-Control': 'no-cache',
+            // Include token in Authorization header as a fallback
+            ...(authToken && { 'Authorization': `Bearer ${authToken}` })
           },
         });
 
         if (!response.ok) {
+          console.error(`Users API error: ${response.status}`);
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('Users data received:', data.count);
 
         if (data.success) {
           setUsers(data.data || []);

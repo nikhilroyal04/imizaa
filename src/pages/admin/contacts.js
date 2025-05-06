@@ -27,18 +27,36 @@ export default function ContactsAdmin() {
     const fetchContacts = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching contacts, user:', user ? `${user.username} (${user.role})` : 'No user');
+
+        // Get token from localStorage as a fallback
+        let authToken = '';
+        if (typeof window !== 'undefined') {
+          const userData = localStorage.getItem('user');
+          if (userData) {
+            const parsedUser = JSON.parse(userData);
+            if (parsedUser && parsedUser.token) {
+              authToken = parsedUser.token;
+            }
+          }
+        }
+
         const response = await fetch('/api/contact', {
           credentials: 'include', // Include cookies in the request
           headers: {
             'Cache-Control': 'no-cache',
+            // Include token in Authorization header as a fallback
+            ...(authToken && { 'Authorization': `Bearer ${authToken}` })
           },
         });
 
         if (!response.ok) {
+          console.error(`Contact API error: ${response.status}`);
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('Contacts data received:', data.count);
 
         if (data.success) {
           setContacts(data.data || []);

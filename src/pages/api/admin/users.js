@@ -10,10 +10,20 @@ export default async function handler(req, res) {
     console.log('Admin users API called, method:', req.method);
 
     // Check if user is admin
-    const token = getCookie('token', { req, res });
+    // First try to get token from cookie
+    let token = getCookie('token', { req, res });
 
     // For debugging in production
     console.log('Token from cookie:', token ? 'Token exists' : 'No token');
+
+    // If no token in cookie, check Authorization header
+    if (!token && req.headers.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+        console.log('Using token from Authorization header');
+      }
+    }
 
     // In development mode, bypass authentication
     let isAuthenticated = false;
@@ -24,7 +34,7 @@ export default async function handler(req, res) {
     } else {
       // In production, verify authentication
       if (!token) {
-        console.log('No token found in request');
+        console.log('No token found in request (neither cookie nor Authorization header)');
         return res.status(401).json({
           success: false,
           message: 'Not authenticated',

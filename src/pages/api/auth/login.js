@@ -56,9 +56,13 @@ export default async function handler(req, res) {
       res,
       maxAge: 60 * 60 * 24 * 30, // 30 days
       path: '/',
-      sameSite: 'lax',
+      sameSite: 'lax', // 'strict' can cause issues with redirects, 'lax' is a good balance
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Only use secure in production
     });
+
+    // For debugging in production
+    console.log('Login successful, token set in cookie');
 
     res.status(200).json({
       success: true,

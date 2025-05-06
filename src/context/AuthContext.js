@@ -106,12 +106,21 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
 
       if (data.success) {
-        // Save user data to localStorage for persistence
+        // Save user data and token to localStorage for persistence
         if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(data.user));
+          // Include the token in the user object for API calls
+          const userWithToken = {
+            ...data.user,
+            token: data.token // Store token for API authorization header
+          };
+          localStorage.setItem('user', JSON.stringify(userWithToken));
         }
 
-        setUser(data.user);
+        // Set user in state (with token)
+        setUser({
+          ...data.user,
+          token: data.token
+        });
 
         // Redirect admin users directly to admin dashboard
         if (data.user.role === 'admin') {
@@ -156,12 +165,21 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
 
       if (data.success) {
-        // Save user data to localStorage for persistence
+        // Save user data and token to localStorage for persistence
         if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(data.user));
+          // Include the token in the user object for API calls
+          const userWithToken = {
+            ...data.user,
+            token: data.token // Store token for API authorization header
+          };
+          localStorage.setItem('user', JSON.stringify(userWithToken));
         }
 
-        setUser(data.user);
+        // Set user in state (with token)
+        setUser({
+          ...data.user,
+          token: data.token
+        });
 
         // Redirect admin users directly to admin dashboard
         if (data.user.role === 'admin') {
