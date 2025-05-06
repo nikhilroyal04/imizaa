@@ -27,7 +27,12 @@ export default function ContactsAdmin() {
     const fetchContacts = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/contact');
+        const response = await fetch('/api/contact', {
+          credentials: 'include', // Include cookies in the request
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -59,6 +64,10 @@ export default function ContactsAdmin() {
       try {
         const response = await fetch(`/api/contact/${contactId}`, {
           method: 'DELETE',
+          credentials: 'include', // Include cookies in the request
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
         });
 
         if (!response.ok) {
@@ -169,7 +178,9 @@ export default function ContactsAdmin() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
+        credentials: 'include', // Include cookies in the request
         body: JSON.stringify({
           status: contactStatus,
           notes: contactNotes,

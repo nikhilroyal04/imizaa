@@ -26,7 +26,12 @@ export default function UsersAdmin() {
     const fetchUsers = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/admin/users');
+        const response = await fetch('/api/admin/users', {
+          credentials: 'include', // Include cookies in the request
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -65,7 +70,9 @@ export default function UsersAdmin() {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
           },
+          credentials: 'include', // Include cookies in the request
           body: JSON.stringify({ userId }),
         });
 
@@ -172,7 +179,9 @@ export default function UsersAdmin() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
+        credentials: 'include', // Include cookies in the request
         body: JSON.stringify({
           userId: userId,
           role: userRole,
