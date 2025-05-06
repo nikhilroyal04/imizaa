@@ -24,6 +24,12 @@ export default async function handler(req, res) {
         }
       }
 
+      // If still no token, check query parameter
+      if (!token && req.query.token) {
+        token = req.query.token;
+        console.log('Using token from query parameter');
+      }
+
       // In development mode, bypass authentication
       if (process.env.NODE_ENV === 'development') {
         const contacts = await getAllContacts();

@@ -40,7 +40,14 @@ export default function UsersAdmin() {
           }
         }
 
-        const response = await fetch('/api/admin/users', {
+        // Use token in query parameter for reliable authentication
+        const url = authToken
+          ? `/api/admin/users?token=${encodeURIComponent(authToken)}`
+          : '/api/admin/users';
+
+        console.log('Fetching users with URL:', url.includes('token=') ? 'URL with token' : 'URL without token');
+
+        const response = await fetch(url, {
           credentials: 'include', // Include cookies in the request
           headers: {
             'Cache-Control': 'no-cache',
@@ -84,11 +91,29 @@ export default function UsersAdmin() {
 
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        const response = await fetch('/api/admin/users', {
+        // Get token from localStorage
+        let authToken = '';
+        if (typeof window !== 'undefined') {
+          const userData = localStorage.getItem('user');
+          if (userData) {
+            const parsedUser = JSON.parse(userData);
+            if (parsedUser && parsedUser.token) {
+              authToken = parsedUser.token;
+            }
+          }
+        }
+
+        // Use token in query parameter
+        const url = authToken
+          ? `/api/admin/users?token=${encodeURIComponent(authToken)}`
+          : '/api/admin/users';
+
+        const response = await fetch(url, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache',
+            ...(authToken && { 'Authorization': `Bearer ${authToken}` })
           },
           credentials: 'include', // Include cookies in the request
           body: JSON.stringify({ userId }),
@@ -193,11 +218,29 @@ export default function UsersAdmin() {
         throw new Error('User ID is missing');
       }
 
-      const response = await fetch('/api/admin/users', {
+      // Get token from localStorage
+      let authToken = '';
+      if (typeof window !== 'undefined') {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser && parsedUser.token) {
+            authToken = parsedUser.token;
+          }
+        }
+      }
+
+      // Use token in query parameter
+      const url = authToken
+        ? `/api/admin/users?token=${encodeURIComponent(authToken)}`
+        : '/api/admin/users';
+
+      const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache',
+          ...(authToken && { 'Authorization': `Bearer ${authToken}` })
         },
         credentials: 'include', // Include cookies in the request
         body: JSON.stringify({

@@ -41,7 +41,14 @@ export default function ContactsAdmin() {
           }
         }
 
-        const response = await fetch('/api/contact', {
+        // Use token in query parameter for reliable authentication
+        const url = authToken
+          ? `/api/contact?token=${encodeURIComponent(authToken)}`
+          : '/api/contact';
+
+        console.log('Fetching contacts with URL:', url.includes('token=') ? 'URL with token' : 'URL without token');
+
+        const response = await fetch(url, {
           credentials: 'include', // Include cookies in the request
           headers: {
             'Cache-Control': 'no-cache',
@@ -80,11 +87,29 @@ export default function ContactsAdmin() {
   const deleteContact = async (contactId) => {
     if (window.confirm('Are you sure you want to delete this contact?')) {
       try {
-        const response = await fetch(`/api/contact/${contactId}`, {
+        // Get token from localStorage
+        let authToken = '';
+        if (typeof window !== 'undefined') {
+          const userData = localStorage.getItem('user');
+          if (userData) {
+            const parsedUser = JSON.parse(userData);
+            if (parsedUser && parsedUser.token) {
+              authToken = parsedUser.token;
+            }
+          }
+        }
+
+        // Use token in query parameter
+        const url = authToken
+          ? `/api/contact/${contactId}?token=${encodeURIComponent(authToken)}`
+          : `/api/contact/${contactId}`;
+
+        const response = await fetch(url, {
           method: 'DELETE',
           credentials: 'include', // Include cookies in the request
           headers: {
             'Cache-Control': 'no-cache',
+            ...(authToken && { 'Authorization': `Bearer ${authToken}` })
           },
         });
 
@@ -192,11 +217,29 @@ export default function ContactsAdmin() {
         throw new Error('Contact ID is missing');
       }
 
-      const response = await fetch(`/api/contact/${contactId}`, {
+      // Get token from localStorage
+      let authToken = '';
+      if (typeof window !== 'undefined') {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser && parsedUser.token) {
+            authToken = parsedUser.token;
+          }
+        }
+      }
+
+      // Use token in query parameter
+      const url = authToken
+        ? `/api/contact/${contactId}?token=${encodeURIComponent(authToken)}`
+        : `/api/contact/${contactId}`;
+
+      const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache',
+          ...(authToken && { 'Authorization': `Bearer ${authToken}` })
         },
         credentials: 'include', // Include cookies in the request
         body: JSON.stringify({

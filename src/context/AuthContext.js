@@ -8,9 +8,25 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedUser = localStorage.getItem('user');
-      return savedUser ? JSON.parse(savedUser) : null;
+      const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+
+      // Log the user data for debugging
+      console.log('Initial user state from localStorage:', parsedUser ?
+        `${parsedUser.username} (${parsedUser.role})` : 'No user');
+
+      return parsedUser;
     }
     return null;
+  });
+
+  // Store the authentication token separately for easier access
+  const [authToken, setAuthToken] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('user');
+      const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+      return parsedUser?.token || '';
+    }
+    return '';
   });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -85,6 +101,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
+      console.log('Attempting login for:', email);
+
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -96,6 +114,7 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (!res.ok) {
+        console.error('Login API error:', res.status);
         const errorData = await res.json();
         return {
           success: false,
@@ -104,6 +123,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       const data = await res.json();
+      console.log('Login response received, success:', data.success);
 
       if (data.success) {
         // Save user data and token to localStorage for persistence
@@ -114,6 +134,11 @@ export const AuthProvider = ({ children }) => {
             token: data.token // Store token for API authorization header
           };
           localStorage.setItem('user', JSON.stringify(userWithToken));
+          console.log('User data saved to localStorage with token');
+
+          // Also store token separately for easier access
+          localStorage.setItem('authToken', data.token);
+          setAuthToken(data.token);
         }
 
         // Set user in state (with token)
@@ -124,6 +149,7 @@ export const AuthProvider = ({ children }) => {
 
         // Redirect admin users directly to admin dashboard
         if (data.user.role === 'admin') {
+          console.log('Admin user detected, redirecting to admin dashboard');
           router.push('/admin');
         } else {
           router.push('/');
