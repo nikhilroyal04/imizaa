@@ -6,24 +6,27 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export default async function handler(req, res) {
   try {
-    // For development/testing purposes, allow access without authentication
-    // Remove this in production
-    if (process.env.NODE_ENV === 'development') {
-      // Handle GET request - list all contacts
-      if (req.method === 'GET') {
-        const contacts = await getAllContacts();
+    // Handle GET request - list all contacts
+    if (req.method === 'GET') {
+      // Check if user is admin
+      const token = getCookie('token', { req, res });
 
+      // For debugging in production
+      console.log('Token from cookie:', token ? 'Token exists' : 'No token');
+
+      // In development mode, bypass authentication
+      if (process.env.NODE_ENV === 'development') {
+        const contacts = await getAllContacts();
         return res.status(200).json({
           success: true,
           count: contacts.length,
           data: contacts,
         });
       }
-    } else {
-      // Check if user is admin
-      const token = getCookie('token', { req, res });
 
+      // In production, verify authentication
       if (!token) {
+        console.log('No token found in request');
         return res.status(401).json({
           success: false,
           message: 'Not authenticated',
@@ -37,6 +40,9 @@ export default async function handler(req, res) {
         // Verify token
         const decoded = jwt.verify(tokenString, JWT_SECRET);
 
+        // For debugging in production
+        console.log('Token decoded, role:', decoded.role);
+
         if (decoded.role !== 'admin') {
           return res.status(403).json({
             success: false,
@@ -44,16 +50,13 @@ export default async function handler(req, res) {
           });
         }
 
-        // Handle GET request - list all contacts
-        if (req.method === 'GET') {
-          const contacts = await getAllContacts();
+        const contacts = await getAllContacts();
 
-          return res.status(200).json({
-            success: true,
-            count: contacts.length,
-            data: contacts,
-          });
-        }
+        return res.status(200).json({
+          success: true,
+          count: contacts.length,
+          data: contacts,
+        });
       } catch (error) {
         console.error('Authentication error:', error);
         return res.status(401).json({

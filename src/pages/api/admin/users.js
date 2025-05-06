@@ -6,16 +6,25 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export default async function handler(req, res) {
   try {
+    // For debugging in production
+    console.log('Admin users API called, method:', req.method);
 
-    // For development/testing purposes, allow access without authentication
-    // Remove this in production
-    let isAuthenticated = process.env.NODE_ENV === 'development';
+    // Check if user is admin
+    const token = getCookie('token', { req, res });
 
-    if (!isAuthenticated) {
-      // Check if user is admin
-      const token = getCookie('token', { req, res });
+    // For debugging in production
+    console.log('Token from cookie:', token ? 'Token exists' : 'No token');
 
+    // In development mode, bypass authentication
+    let isAuthenticated = false;
+
+    if (process.env.NODE_ENV === 'development') {
+      isAuthenticated = true;
+      console.log('Development mode - authentication bypassed');
+    } else {
+      // In production, verify authentication
       if (!token) {
+        console.log('No token found in request');
         return res.status(401).json({
           success: false,
           message: 'Not authenticated',
@@ -28,6 +37,9 @@ export default async function handler(req, res) {
 
         // Verify token
         const decoded = jwt.verify(tokenString, JWT_SECRET);
+
+        // For debugging in production
+        console.log('Token decoded, role:', decoded.role);
 
         if (decoded.role !== 'admin') {
           return res.status(403).json({
