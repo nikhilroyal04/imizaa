@@ -472,7 +472,7 @@ export default function SubmittedApplications({ applications: initialApplication
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <p className="text-gray-600">No applications submitted yet.</p>
           <button
-            onClick={() => router.push('/apply')}
+            onClick={() => router.push('/')}
             className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
           >
             Start Application
