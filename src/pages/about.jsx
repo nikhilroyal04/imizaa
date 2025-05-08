@@ -1,8 +1,5 @@
 import React from 'react';
-import Head from 'next/head';
 import Image from 'next/image';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { FaPlane, FaPassport, FaGlobe, FaUsers, FaHandshake, FaHeadset, FaUniversity, FaBriefcase, FaUmbrellaBeach, FaCheck } from 'react-icons/fa';
 
 const AboutUs = () => {
@@ -257,7 +254,6 @@ const AboutUs = () => {
         </section>
       </main>
 
-      <Footer />
     </>
   );
 };
