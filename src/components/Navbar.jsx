@@ -50,13 +50,7 @@ const Navbar = () => {
                 {user.role === 'admin' ? (
                   // Admin users
                   <div className="flex items-center space-x-4">
-                    <Link
-                      href="/about"
-                      className="text-gray-700 hover:text-gray-900 font-medium flex items-center"
-                    >
-                      <FaInfoCircle className="mr-2 text-gray-500" />
-                      About Us
-                    </Link>
+                    
                     <Link
                       href="/admin"
                       className="text-gray-700 hover:text-gray-900 font-medium flex items-center"
