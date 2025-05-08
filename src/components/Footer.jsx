@@ -44,21 +44,13 @@ const Footer = () => {
                   About Us
                 </Link>
               </li>
+             
               <li>
-                <Link href="/services" className="text-gray-400 hover:text-white transition-colors">
-                  Services
-                </Link>
-              </li>
-              <li>
-                <Link href="/destinations" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="#destination" className="text-gray-400 hover:text-white transition-colors">
                   Destinations
                 </Link>
               </li>
-              <li>
-                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
-                  Contact
-                </Link>
-              </li>
+              
             </ul>
           </div>
 
