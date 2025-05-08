@@ -1,142 +1,10 @@
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/firebase/config';
 
-// Sample destination data
-const destinationsData = [
-  {
-    id: 1,
-    name: 'United Arab Emirates',
-    image: '/images/c.jpeg',
-    price: '₹6450',
-    fees: '(+649 Fees+Tax)',
-    processingTime: '5 days',
-    issuedRecently: 1064,
-    type: 'eVisa',
-    category: ['popular', 'easy']
-  },
-  {
-    id: 2,
-    name: 'Singapore',
-    image: '/images/c.jpeg',
-    price: '₹2399',
-    fees: '(+199 Fees+Tax)',
-    processingTime: '12 days',
-    issuedRecently: 968,
-    type: 'eVisa',
-    category: ['popular']
-  },
-  {
-    id: 3,
-    name: 'Vietnam',
-    image: '/images/c.jpeg',
-    price: '₹2300',
-    fees: '(+199 Fees+Tax)',
-    processingTime: '5 days',
-    issuedRecently: 594,
-    type: 'e-Visa',
-    category: ['easy', 'week']
-  },
-  {
-    id: 4,
-    name: 'United States of America',
-    image: '/images/c.jpeg',
-    price: '₹16095',
-    fees: '(+999 Fees+Tax)',
-    processingTime: '150 days',
-    issuedRecently: 2,
-    type: 'Sticker',
-    category: ['popular']
-  },
-  {
-    id: 5,
-    name: 'Japan',
-    image: '/images/c.jpeg',
-    price: '₹2500',
-    fees: '(+299 Fees+Tax)',
-    processingTime: '7 days',
-    issuedRecently: 320,
-    type: 'eVisa',
-    category: ['popular', 'week']
-  },
-  {
-    id: 6,
-    name: 'Australia',
-    image: '/images/c.jpeg',
-    price: '₹9800',
-    fees: '(+499 Fees+Tax)',
-    processingTime: '15 days',
-    issuedRecently: 156,
-    type: 'eVisa',
-    category: ['popular']
-  },
-  {
-    id: 7,
-    name: 'South Korea',
-    image: '/images/c.jpeg',
-    price: '₹3200',
-    fees: '(+299 Fees+Tax)',
-    processingTime: '10 days',
-    issuedRecently: 338,
-    type: 'eVisa',
-    category: ['easy']
-  },
-  {
-    id: 8,
-    name: 'France',
-    image: '/images/c.jpeg',
-    price: '₹7900',
-    fees: '(+399 Fees+Tax)',
-    processingTime: '15 days',
-    issuedRecently: 245,
-    type: 'Schengen',
-    category: ['schengen']
-  },
-  {
-    id: 9,
-    name: 'Thailand',
-    image: '/images/c.jpeg',
-    price: '₹2100',
-    fees: '(+199 Fees+Tax)',
-    processingTime: '3 days',
-    issuedRecently: 782,
-    type: 'Visa Free',
-    category: ['free', 'week']
-  },
-  {
-    id: 10,
-    name: 'Germany',
-    image: '/images/c.jpeg',
-    price: '₹7900',
-    fees: '(+399 Fees+Tax)',
-    processingTime: '15 days',
-    issuedRecently: 189,
-    type: 'Schengen',
-    category: ['schengen']
-  },
-  {
-    id: 11,
-    name: 'Canada',
-    image: '/images/c.jpeg',
-    price: '₹12500',
-    fees: '(+699 Fees+Tax)',
-    processingTime: '45 days',
-    issuedRecently: 124,
-    type: 'eVisa',
-    category: ['popular']
-  },
-  {
-    id: 12,
-    name: 'Italy',
-    image: '/images/c.jpeg',
-    price: '₹7900',
-    fees: '(+399 Fees+Tax)',
-    processingTime: '15 days',
-    issuedRecently: 167,
-    type: 'Schengen',
-    category: ['schengen']
-  }
-];
+// No static data - all countries will be fetched from Firebase
+
 
 const DestinationCard = ({ destination }) => {
   const router = useRouter();
@@ -165,27 +33,12 @@ const DestinationCard = ({ destination }) => {
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-4 ">
         <h3 className="text-lg font-semibold mb-1">{destination.name}</h3>
-        <div className="flex justify-between items-center mb-3">
-          <span className={`text-xs font-medium px-2 py-1 rounded ${
-            destination.type === 'eVisa' || destination.type === 'e-Visa'
-              ? 'bg-blue-100 text-blue-800'
-              : destination.type === 'Sticker'
-                ? 'bg-pink-100 text-pink-800'
-                : destination.type === 'Schengen'
-                  ? 'bg-purple-100 text-purple-800'
-                  : 'bg-green-100 text-green-800'
-          }`}>
-            {destination.type}
-          </span>
-        </div>
 
-        <div className="flex justify-between items-end">
-          <div>
-            <div className="text-xl font-bold text-blue-600">{destination.price}</div>
-            <div className="text-xs text-gray-500">{destination.fees}</div>
-          </div>
+
+
+        <div className=" items-end">
 
           <div className="flex flex-col items-end">
             <div className="text-sm">Get Visa in</div>
@@ -206,6 +59,8 @@ const HomeCard = () => {
   const [visibleCount, setVisibleCount] = useState(8);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const filterOptions = [
     { id: 'all', label: 'All' },
@@ -216,14 +71,59 @@ const HomeCard = () => {
     { id: 'free', label: 'Visa Free' }
   ];
 
+  // Fetch destinations from Firebase
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        setLoading(true);
+
+        // First try to get countries from Firebase
+        const countriesCollection = collection(db, 'countries');
+        const countriesSnapshot = await getDocs(countriesCollection);
+
+        if (!countriesSnapshot.empty) {
+          const countriesList = countriesSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setDestinations(countriesList);
+        } else {
+          // If countries collection is empty, try destinations collection as fallback
+          const destinationsCollection = collection(db, 'destinations');
+          const destinationSnapshot = await getDocs(destinationsCollection);
+
+          if (!destinationSnapshot.empty) {
+            const destinationList = destinationSnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            setDestinations(destinationList);
+          } else {
+            // No data found in Firebase
+            console.log('No countries or destinations in Firebase');
+            setDestinations([]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching destinations:', error);
+        // Set empty array on error
+        setDestinations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDestinations();
+  }, []);
+
   // First filter by category, then by search query
   const filteredByCategory = activeFilter === 'all'
-    ? destinationsData
-    : destinationsData.filter(dest => dest.category.includes(activeFilter));
+    ? destinations
+    : destinations.filter(dest => dest.category?.includes(activeFilter));
 
   const filteredDestinations = searchQuery
     ? filteredByCategory.filter(dest =>
-        dest.name.toLowerCase().includes(searchQuery.toLowerCase())
+        dest.name?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : filteredByCategory;
 
@@ -281,11 +181,21 @@ const HomeCard = () => {
       </div>
 
       {/* Destination Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredDestinations.slice(0, visibleCount).map(destination => (
-          <DestinationCard key={destination.id} destination={destination} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b76e79]"></div>
+        </div>
+      ) : filteredDestinations.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredDestinations.slice(0, visibleCount).map(destination => (
+            <DestinationCard key={destination.id} destination={destination} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-gray-500">No destinations found matching your criteria.</p>
+        </div>
+      )}
 
       {/* Load More Button */}
       {visibleCount < filteredDestinations.length && (

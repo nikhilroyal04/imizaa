@@ -9,11 +9,13 @@ export default function DocumentViewer() {
   const { url, type } = router.query;
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Reset state when URL changes
   useEffect(() => {
     setImageLoaded(false);
     setImageError(false);
+    setIsLoading(true);
   }, [url]);
 
   if (!url) {
@@ -87,16 +89,34 @@ export default function DocumentViewer() {
                   </a>
                 </div>
               ) : (
-                <div className="relative w-full" style={{ height: '600px', display: imageLoaded ? 'block' : 'none' }}>
-                  <Image
-                    src={url}
-                    alt={type || 'Document'}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    onLoadingComplete={() => setImageLoaded(true)}
-                    onError={() => setImageError(true)}
-                    unoptimized={true} // For external URLs
-                  />
+                <div className="relative w-full h-[600px]">
+                  {!imageLoaded && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex flex-col items-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500 mb-4"></div>
+                        <p className="text-rose-500">Loading document...</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="relative w-full h-full" style={{ display: imageLoaded ? 'block' : 'none' }}>
+                    <Image
+                      src={url}
+                      alt={type || 'Document'}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      onLoad={() => {
+                        setImageLoaded(true);
+                        setIsLoading(false);
+                      }}
+                      onError={() => {
+                        setImageError(true);
+                        setIsLoading(false);
+                      }}
+                      unoptimized={true} // For external URLs
+                      loading="eager" // Load immediately instead of lazy loading
+                      priority={true} // Give this image high priority
+                    />
+                  </div>
                 </div>
               )}
             </div>

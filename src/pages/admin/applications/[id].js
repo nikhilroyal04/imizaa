@@ -28,17 +28,12 @@ export default function ApplicationDetail() {
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [updateError, setUpdateError] = useState('');
 
-  // Status options
+  // Status options - limited to only 4 main statuses
   const statusOptions = [
     'Document Submitted',
     'Additional Documents Needed',
-    'Additional Documents Submitted',
-    'Documents Verified',
-    'Visa Application Submitted',
-    'Visa Verification In Progress',
-    'Visa Approved',
-    'Visa Rejected',
-    'Ticket Closed'
+    'Additional Document Submitted',
+    'Visa Approved'
   ];
 
   // Redirect if not admin

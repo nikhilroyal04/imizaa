@@ -10,7 +10,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
-            <h2 className="text-2xl font-bold text-pink-400 mb-4">IMMIZA</h2>
+            <h2 className="text-2xl font-bold text-[#b76e79] mb-4">IMMIZA</h2>
             <p className="mb-4 text-sm">
               Your trusted partner for visa and immigration services. We make the complex visa process simple and stress free.
             </p>
@@ -86,19 +86,19 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-white mb-4">Contact Us</h3>
             <ul className="space-y-3">
               <li className="flex items-center">
-                <FaPhone className="text-pink-400 mr-2" />
+                <FaPhone className="text-[#b76e79] mr-2" />
                 <a href="tel:+919876543210" className="text-gray-400 hover:text-white transition-colors">
                   +91 9876543210
                 </a>
               </li>
               <li className="flex items-center">
-                <FaEnvelope className="text-pink-400 mr-2" />
+                <FaEnvelope className="text-[#b76e79] mr-2" />
                 <a href="mailto:support@immiza.com" className="text-gray-400 hover:text-white transition-colors">
                   support@immiza.com
                 </a>
               </li>
               <li className="flex items-center">
-                <FaClock className="text-pink-400 mr-2" />
+                <FaClock className="text-[#b76e79] mr-2" />
                 <span className="text-gray-400">Mon - Fri: 9:00 AM - 6:00 PM</span>
               </li>
               <li>
@@ -106,7 +106,7 @@ const Footer = () => {
                   href="https://wa.me/919876543210"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center bg-pink-400 text-white px-4 py-2 rounded-md hover:bg-pink-500 transition-colors"
+                  className="inline-flex items-center bg-[#b76e79] text-white px-4 py-2 rounded-md hover:bg-pink-500 transition-colors"
                 >
                   <BsChatFill className="mr-2" />
                   Chat with us
@@ -128,9 +128,7 @@ const Footer = () => {
             <Link href="/terms" className="text-sm text-gray-500 hover:text-white transition-colors">
               Terms of Service
             </Link>
-            <Link href="/cookies" className="text-sm text-gray-500 hover:text-white transition-colors">
-              Cookie Policy
-            </Link>
+            
           </div>
         </div>
       </div>

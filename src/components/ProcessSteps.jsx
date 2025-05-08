@@ -6,42 +6,42 @@ const ProcessSteps = () => {
   // Process steps data
   const steps = [
     {
-      id: 1,
-      title: 'Apply Online',
-      description: 'Fill out our simple application form with your travel details and personal information.',
+      id: '1',
+      title: 'Choose a Country',
+      description: 'Select your destination country from our comprehensive list of supported countries.',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-[#b76e79]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       )
     },
     {
-      id: 2,
-      title: 'Upload Documents',
-      description: 'Upload your passport, photos, and other required documents securely to our platform.',
+      id: '2',
+      title: 'Select Your Purpose',
+      description: 'Choose the purpose of your travel - tourism, work, or study to get tailored requirements.',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-[#b76e79]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
         </svg>
       )
     },
     {
-      id: 3,
-      title: 'Visa Processing',
-      description: 'Our experts process your application and liaise with embassies and consulates on your behalf.',
+      id: '3',
+      title: 'Get Your Checklist',
+      description: 'Receive a personalized checklist of all documents required for your visa application.',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-[#b76e79]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
         </svg>
       )
     },
     {
-      id: 4,
-      title: 'Receive Your Visa',
-      description: 'Get your approved visa delivered electronically or by mail, ready for your journey!',
+      id: '4',
+      title: 'Track Your Progress',
+      description: 'Monitor your visa application status in real-time through our intuitive dashboard.',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-[#b76e79]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       )
     }
@@ -63,17 +63,8 @@ const ProcessSteps = () => {
     const stepElements = document.querySelectorAll('.process-step');
     stepElements.forEach((el) => observer.observe(el));
 
-    // Animate the single plane when the section is in view
-    const planeElement = document.querySelector('.single-plane-animation');
-    if (planeElement) {
-      observer.observe(planeElement);
-    }
-
     return () => {
       stepElements.forEach((el) => observer.unobserve(el));
-      if (planeElement) {
-        observer.unobserve(planeElement);
-      }
     };
   }, []);
 
@@ -82,12 +73,12 @@ const ProcessSteps = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-1 rounded-full text-sm bg-[#fdf0f2] text-[#b76e79] mb-4">
-            <span className="mr-2">✈️</span>
-            <span>Simple 4-Step Process</span>
+            <span className="mr-2">✨</span>
+            <span>Easy 4-Step Process</span>
           </div>
           <h2 className="text-4xl font-bold mb-3 text-[#4a3e42]">How It Works</h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Get your visa in 4 simple steps with our streamlined process
+            Get your visa with our simple step-by-step process
           </p>
         </div>
 
@@ -110,20 +101,10 @@ const ProcessSteps = () => {
             ))}
           </div>
 
-          {/* Connecting Lines with Single Animated Flight Path */}
+          {/* Connecting Lines */}
           <div className="hidden md:block">
             {/* Continuous line across all steps */}
-            <div className="absolute top-1/3 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-[#4299e1] via-[#4299e1] to-[#4299e1] rounded z-0">
-              {/* Single airplane that travels across all steps */}
-              <div className="single-plane-animation opacity-0 absolute top-1/2 transform -translate-y-1/2">
-                <div className="relative">
-                  <div className="absolute -top-5 -left-1 w-12 h-5 bg-[#fdf0f2] rounded-full opacity-40 animate-pulse"></div>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#b76e79] transform rotate-45" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
+            <div className="absolute top-1/3 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-[#b76e79] via-[#b76e79] to-[#b76e79] rounded z-0"></div>
           </div>
         </div>
       </div>

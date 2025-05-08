@@ -2,22 +2,47 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 
-export default function VisaApplicationForm() {
+export default function VisaApplicationForm({ destinationId: propDestinationId, destinationName: propDestinationName, visaType: propVisaType }) {
   const router = useRouter();
-  const { destinationId, destinationName, visaType } = router.query;
+  const {
+    destinationId: queryDestinationId,
+    destinationName: queryDestinationName,
+    visaType: queryVisaType,
+    documentChecklist: queryDocumentChecklist
+  } = router.query;
+
+  // Use props if provided, otherwise fall back to query parameters
+  const destinationId = propDestinationId || queryDestinationId;
+  const destinationName = propDestinationName || queryDestinationName;
+  const visaType = propVisaType || queryVisaType;
+
+  // Parse document checklist from URL parameter
+  const [documentChecklist, setDocumentChecklist] = useState([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    passportPhoto: null,
-    passportFront: null,
-    passportBack: null,
     destinationId: '',
     destinationName: '',
-    visaType: ''
+    visaType: '',
+    documents: {} // Will hold all document files
   });
+
+  // Parse document checklist when it's available in the URL
+  useEffect(() => {
+    if (queryDocumentChecklist) {
+      try {
+        const parsedChecklist = JSON.parse(decodeURIComponent(queryDocumentChecklist));
+        if (Array.isArray(parsedChecklist)) {
+          setDocumentChecklist(parsedChecklist);
+        }
+      } catch (error) {
+        console.error('Error parsing document checklist:', error);
+      }
+    }
+  }, [queryDocumentChecklist]);
 
   // Update form data when query parameters change
   useEffect(() => {
@@ -41,9 +66,14 @@ export default function VisaApplicationForm() {
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
+
+    // Update the documents object in formData
     setFormData(prev => ({
       ...prev,
-      [name]: files[0]
+      documents: {
+        ...prev.documents,
+        [name]: files[0]
+      }
     }));
   };
 
@@ -103,23 +133,27 @@ export default function VisaApplicationForm() {
     setError('');
 
     try {
-      // Upload all files to Cloudinary
+      // Upload all files to Firebase Storage
       const uploadedDocuments = [];
+      const documentEntries = Object.entries(formData.documents);
 
-      // Upload passport photo
-      const passportPhoto = await uploadFile(formData.passportPhoto, 'Passport Photo');
-      if (passportPhoto) uploadedDocuments.push(passportPhoto);
+      // Check if any documents were selected
+      if (documentEntries.length === 0) {
+        setError('Please upload at least one document.');
+        setIsSubmitting(false);
+        return;
+      }
 
-      // Upload passport front
-      const passportFront = await uploadFile(formData.passportFront, 'Passport Front');
-      if (passportFront) uploadedDocuments.push(passportFront);
+      // Upload each document
+      for (const [docName, file] of documentEntries) {
+        const uploadedDoc = await uploadFile(file, docName);
+        if (uploadedDoc) {
+          uploadedDocuments.push(uploadedDoc);
+        }
+      }
 
-      // Upload passport back
-      const passportBack = await uploadFile(formData.passportBack, 'Passport Back');
-      if (passportBack) uploadedDocuments.push(passportBack);
-
-      // Check if all required documents were uploaded
-      if (uploadedDocuments.length < 3) {
+      // Check if all documents were uploaded successfully
+      if (uploadedDocuments.length !== documentEntries.length) {
         setError('Failed to upload all required documents. Please try again.');
         setIsSubmitting(false);
         return;
@@ -140,7 +174,7 @@ export default function VisaApplicationForm() {
 
       if (response.data.success) {
         // Show success message and redirect to dashboard
-        alert('Application submitted successfully! Your data has been saved to MongoDB with secure image URLs.');
+        alert('Application submitted successfully! Your data has been saved to Firebase with secure image URLs.');
         router.push('/dashboard');
       } else {
         setError(response.data.message || 'Failed to submit application');
@@ -159,8 +193,8 @@ export default function VisaApplicationForm() {
 
       {/* Display destination and visa type information if available */}
       {formData.destinationName && formData.visaType && (
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-          <p className="text-blue-700">
+        <div className="bg-[#fdf0f2] border-l-4 border-[#b76e79] p-4 mb-6">
+          <p className="text-[#b76e79]">
             You are applying for a <strong>{formData.visaType} Visa</strong> to <strong>{formData.destinationName}</strong>
           </p>
         </div>
@@ -183,7 +217,7 @@ export default function VisaApplicationForm() {
             required
             value={formData.name}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2 border rounded-md focus:ring-[#b76e79] focus:border-[#b76e79]"
             disabled={isSubmitting}
           />
         </div>
@@ -198,65 +232,100 @@ export default function VisaApplicationForm() {
             required
             value={formData.email}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2 border rounded-md focus:ring-[#b76e79] focus:border-[#b76e79]"
             disabled={isSubmitting}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Passport Size Photo
-          </label>
-          <input
-            type="file"
-            name="passportPhoto"
-            required
-            accept="image/*"
-            onChange={handleFileChange}
-            className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Passport Front Photo
-          </label>
-          <input
-            type="file"
-            name="passportFront"
-            required
-            accept="image/*"
-            onChange={handleFileChange}
-            className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Passport Back Photo
-          </label>
-          <input
-            type="file"
-            name="passportBack"
-            required
-            accept="image/*"
-            onChange={handleFileChange}
-            className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-          <p className="text-yellow-700">
-            Please check in the future for further requirements.
+        {/* Document Checklist Section */}
+        <div className="bg-[#fdf0f2] border-l-4 border-[#b76e79] p-4 mb-6">
+          <h3 className="text-[#b76e79] font-medium mb-2">Required Documents</h3>
+          <p className="text-[#b76e79] text-sm mb-4">
+            Please upload all the required documents listed below.
           </p>
+
+          {documentChecklist.length > 0 ? (
+            <ul className="list-disc pl-5 text-[#b76e79] text-sm">
+            <li>
+              If you do not have a document, please <a href="https://wa.me/yourwhatsappnumber" className="text-[#b76e79] underline" target="_blank" rel="noopener noreferrer">contact us</a>.
+              
+            </li>
+          </ul>
+          
+          
+          ) : (
+            <p className="text-[#b76e79] text-sm italic">
+              No specific documents are required for this visa type.
+            </p>
+          )}
         </div>
+
+        {/* Dynamic Document Upload Fields */}
+        {documentChecklist.length > 0 ? (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-700">Upload Documents</h3>
+
+            {documentChecklist.map((doc, index) => (
+              <div key={index} className="border rounded-md p-4 bg-gray-50">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {doc}
+                </label>
+                <input
+                  type="file"
+                  name={doc}
+                  required
+                  accept="image/*,.pdf"
+                  onChange={handleFileChange}
+                  className="w-full px-4 py-2 border rounded-md focus:ring-[#b76e79] focus:border-[#b76e79]"
+                  disabled={isSubmitting}
+                />
+                {formData.documents[doc] && (
+                  <p className="mt-2 text-sm text-green-600">
+                    Selected: {formData.documents[doc].name}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-700">Upload Documents</h3>
+
+            <div className="border rounded-md p-4 bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Passport Photo
+              </label>
+              <input
+                type="file"
+                name="Passport Photo"
+                required
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full px-4 py-2 border rounded-md focus:ring-[#b76e79] focus:border-[#b76e79]"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div className="border rounded-md p-4 bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Passport Front
+              </label>
+              <input
+                type="file"
+                name="Passport Front"
+                required
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full px-4 py-2 border rounded-md focus:ring-[#b76e79] focus:border-[#b76e79]"
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+        )}
 
         <button
           type="submit"
-          className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors ${
+          className={`w-full bg-[#b76e79] text-white py-2 px-4 rounded-md hover:bg-[#a25c67] transition-colors ${
             isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
           }`}
           disabled={isSubmitting}

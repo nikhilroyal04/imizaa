@@ -35,8 +35,8 @@ export default function ApplyPage() {
                   Fill out the form below to submit your visa application
                 </p>
               </div>
-              <Link 
-                href="/dashboard" 
+              <Link
+                href="/dashboard"
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
               >
                 View My Applications
@@ -45,7 +45,11 @@ export default function ApplyPage() {
           </div>
 
           <div className="p-4">
-            <VisaApplicationForm />
+            <VisaApplicationForm
+              destinationId={destinationId}
+              destinationName={destinationName}
+              visaType={visaType}
+            />
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-import { FaPhone, FaUsers, FaChartBar, FaPassport, FaClipboardList } from 'react-icons/fa';
+import { FaPhone, FaUsers, FaPassport, FaGlobe } from 'react-icons/fa';
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
@@ -159,6 +159,18 @@ export default function AdminDashboard() {
                   <div className="ml-4">
                     <h3 className="text-lg font-medium text-gray-900">User Management</h3>
                     <p className="text-sm text-gray-500">Manage user accounts</p>
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/admin/countries" className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center">
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <FaGlobe className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-lg font-medium text-gray-900">Countries</h3>
+                    <p className="text-sm text-gray-500">Manage country information</p>
                   </div>
                 </div>
               </Link>

@@ -9,7 +9,8 @@ import {
   FaBars,
   FaTimes,
   FaSignOutAlt,
-  FaTachometerAlt
+  FaTachometerAlt,
+  FaInfoCircle
 } from 'react-icons/fa';
 
 const Navbar = () => {
@@ -50,6 +51,13 @@ const Navbar = () => {
                   // Admin users
                   <div className="flex items-center space-x-4">
                     <Link
+                      href="/about"
+                      className="text-gray-700 hover:text-gray-900 font-medium flex items-center"
+                    >
+                      <FaInfoCircle className="mr-2 text-gray-500" />
+                      About Us
+                    </Link>
+                    <Link
                       href="/admin"
                       className="text-gray-700 hover:text-gray-900 font-medium flex items-center"
                     >
@@ -67,6 +75,15 @@ const Navbar = () => {
                 ) : (
                   // Regular users with dropdown and WhatsApp button
                   <div className="flex items-center space-x-4">
+                    {/* About Us Link */}
+                    <Link
+                      href="/about"
+                      className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 font-medium"
+                    >
+                      <FaInfoCircle className="text-lg" />
+                      <span>About Us</span>
+                    </Link>
+
                     {/* WhatsApp Contact Button */}
                     <a
                       href="https://wa.me/919876543210"
@@ -134,11 +151,14 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex items-center space-x-4">
+                <Link href="/about" className="text-gray-700 hover:text-gray-900 font-medium flex items-center">
+                  <FaInfoCircle className="mr-2" />
+                  About Us
+                </Link>
                 <Link href="/login" className="text-gray-700 hover:text-gray-900 font-medium flex items-center">
                   <FaCommentAlt className="mr-2" />
                   Login
                 </Link>
-
               </div>
             )}
           </div>
@@ -185,6 +205,17 @@ const Navbar = () => {
                     Contact Us
                   </div>
                 </a>
+
+                {/* About Us Link for all logged in users */}
+                <Link
+                  href="/about"
+                  className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  <div className="flex items-center">
+                    <FaInfoCircle className="mr-3 text-gray-500" />
+                    About Us
+                  </div>
+                </Link>
 
                 {user.role === 'admin' ? (
                   // Admin links
@@ -235,6 +266,16 @@ const Navbar = () => {
                     Contact Us
                   </div>
                 </a>
+
+                <Link
+                  href="/about"
+                  className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  <div className="flex items-center">
+                    <FaInfoCircle className="mr-3" />
+                    About Us
+                  </div>
+                </Link>
 
                 <Link
                   href="/login"

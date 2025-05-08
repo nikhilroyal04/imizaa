@@ -200,8 +200,9 @@ export async function updateApplicationStatus(id, status, note = null, tentative
       throw new Error('Application not found');
     }
 
-    // Don't add a new status entry if the status hasn't changed
-    if (application.currentStatus === status && !requiredDocuments.length) {
+    // Always add a new status entry if there's a note, even if the status hasn't changed
+    // This allows updating the process through notes without changing the status
+    if (application.currentStatus === status && !requiredDocuments.length && !note) {
       return application;
     }
 

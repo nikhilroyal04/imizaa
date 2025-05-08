@@ -2,61 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 
-// Status flow with days to add for tentative dates
+// Status flow with only 4 main steps
 const statusFlow = [
   {
     status: 'Document Submitted',
     message: 'You have submitted the form.',
     daysToAdd: 0,
-    color: 'bg-blue-100 text-blue-800'
+    color: 'bg-blue-100 text-blue-800',
+    step: 1
   },
   {
     status: 'Additional Documents Needed',
     message: 'Additional documents needed.',
     daysToAdd: 4,
-    color: 'bg-yellow-100 text-yellow-800'
+    color: 'bg-yellow-100 text-yellow-800',
+    step: 2
   },
   {
-    status: 'Additional Documents Submitted',
+    status: 'Additional Document Submitted',
     message: 'Additional documents have been submitted.',
     daysToAdd: 1,
-    color: 'bg-green-100 text-green-800'
-  },
-  {
-    status: 'Documents Verified',
-    message: 'Documents are being verified.',
-    daysToAdd: 2,
-    color: 'bg-indigo-100 text-indigo-800'
-  },
-  {
-    status: 'Visa Application Submitted',
-    message: 'Visa application submitted.',
-    daysToAdd: 7,
-    color: 'bg-purple-100 text-purple-800'
-  },
-  {
-    status: 'Visa Verification In Progress',
-    message: 'Visa verification in progress.',
-    daysToAdd: 14,
-    color: 'bg-orange-100 text-orange-800'
+    color: 'bg-green-100 text-green-800',
+    step: 3
   },
   {
     status: 'Visa Approved',
-    message: 'Visa approved.',
-    daysToAdd: 21,
-    color: 'bg-green-100 text-green-800'
-  },
-  {
-    status: 'Visa Rejected',
-    message: 'Visa rejected.',
-    daysToAdd: 21,
-    color: 'bg-red-100 text-red-800'
-  },
-  {
-    status: 'Ticket Closed',
-    message: 'Ticket closed.',
-    daysToAdd: 30,
-    color: 'bg-gray-100 text-gray-800'
+    message: 'Your visa has been approved!',
+    daysToAdd: 0,
+    color: 'bg-green-100 text-green-800',
+    step: 4
   }
 ];
 
@@ -113,36 +87,42 @@ export default function SubmittedApplications({ applications: initialApplication
     }
   };
 
-  // Get tentative date from status history if available
-  const getTentativeDate = (application, currentStatus) => {
-    // Find the latest status entry that matches the current status
-    const statusEntry = application.statusHistory
-      .filter(entry => entry.status === currentStatus)
-      .sort((a, b) => {
-        // Handle different date formats for sorting
-        const dateA = b.date && b.date.seconds ? new Date(b.date.seconds * 1000) : new Date(b.date || 0);
-        const dateB = a.date && a.date.seconds ? new Date(a.date.seconds * 1000) : new Date(a.date || 0);
-        return dateA - dateB;
-      })[0];
 
-    if (statusEntry && statusEntry.tentativeDate) {
-      // If tentative date exists, format and return it
-      return formatSubmissionDate(statusEntry.tentativeDate);
-    }
-
-    // If no tentative date is set, return a message
-    return "To be determined";
-  };
 
   // Helper function to get status color
   const getStatusColor = (status) => {
-    const statusInfo = statusFlow.find(s => s.status === status);
+    // Map legacy status names to our 4 main statuses
+    let mappedStatus = status;
+    if (status === 'Additional Documents Submitted') {
+      mappedStatus = 'Additional Document Submitted';
+    } else if (['Documents Verified', 'Visa Application Submitted', 'Visa Verification In Progress'].includes(status)) {
+      // These are intermediate steps, show them as the same color as Additional Document Submitted
+      mappedStatus = 'Additional Document Submitted';
+    } else if (status === 'Visa Rejected' || status === 'Ticket Closed') {
+      // Use a specific color for rejected/closed
+      return status === 'Visa Rejected' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800';
+    }
+
+    const statusInfo = statusFlow.find(s => s.status === mappedStatus);
     return statusInfo ? statusInfo.color : 'bg-gray-100 text-gray-800';
   };
 
   // Helper function to get status message
   const getStatusMessage = (status) => {
-    const statusInfo = statusFlow.find(s => s.status === status);
+    // Map legacy status names to our 4 main statuses
+    let mappedStatus = status;
+    if (status === 'Additional Documents Submitted') {
+      mappedStatus = 'Additional Document Submitted';
+    } else if (['Documents Verified', 'Visa Application Submitted', 'Visa Verification In Progress'].includes(status)) {
+      // For intermediate steps, return the actual status
+      return status;
+    } else if (status === 'Visa Rejected') {
+      return 'Your visa application has been rejected.';
+    } else if (status === 'Ticket Closed') {
+      return 'This application has been closed.';
+    }
+
+    const statusInfo = statusFlow.find(s => s.status === mappedStatus);
     return statusInfo ? statusInfo.message : status;
   };
 
@@ -227,9 +207,19 @@ export default function SubmittedApplications({ applications: initialApplication
               </div>
 
               <div className="border-t border-gray-200 pt-4 mt-4">
-                <p className="text-gray-700 mb-4">
-                  <span className="font-medium">Status:</span> {getStatusMessage(application.currentStatus)}
-                </p>
+                {/* Get the latest status entry */}
+                {(() => {
+                  // Find the latest status entry
+                  const latestStatusEntry = application.statusHistory
+                    ? [...application.statusHistory].sort((a, b) => {
+                        const dateA = a.date && a.date.seconds ? new Date(a.date.seconds * 1000) : new Date(a.date || 0);
+                        const dateB = b.date && b.date.seconds ? new Date(b.date.seconds * 1000) : new Date(b.date || 0);
+                        return dateB - dateA;
+                      })[0]
+                    : null;
+
+                 
+                })()}
 
                 {application.currentStatus === 'Additional Documents Needed' && (
                   <div className="mb-4">
@@ -348,8 +338,7 @@ export default function SubmittedApplications({ applications: initialApplication
                     </button>
                   </div>
                 )}
-
-                <h4 className="font-medium mb-2 text-gray-700">Status Timeline</h4>
+                
                 <div className="space-y-2">
                   {/* Filter and deduplicate status history entries */}
                   {(() => {
@@ -380,48 +369,101 @@ export default function SubmittedApplications({ applications: initialApplication
                       return indexA - indexB;
                     });
 
-                    // Render the timeline
-                    return orderedEntries.map((status, index) => (
-                      <div key={index} className="flex flex-col sm:flex-row sm:items-center text-sm mb-2">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 rounded-full bg-blue-500 mr-3"></div>
-                          <span className="text-gray-700">{status.status}</span>
-                          <span className="text-gray-500 ml-2 sm:ml-auto">
-                            {formatSubmissionDate(status.date)}
-                          </span>
-                        </div>
-                        {status.tentativeDate && (
-                          <div className="ml-6 sm:ml-auto mt-1 sm:mt-0">
-                            <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                              Next update: {formatSubmissionDate(status.tentativeDate)}
-                            </span>
+                    // Organize the timeline to show status steps and notes in between
+                    const timeline = [];
+
+                    // First, add all status entries as main steps
+                    orderedEntries.forEach((status) => {
+                      timeline.push({
+                        type: 'status',
+                        data: status,
+                        date: status.date
+                      });
+                    });
+
+                    // Now add all notes that are not directly tied to status changes
+                    const allNotes = application.statusHistory
+                      .filter(entry =>
+                        entry.note &&
+                        entry.note !== `Status updated to ${entry.status}` &&
+                        !entry.note.includes('Status updated to')
+                      )
+                      .map(entry => ({
+                        type: 'note',
+                        data: entry,
+                        date: entry.date
+                      }));
+
+                    // Combine and sort by date
+                    const combinedTimeline = [...timeline, ...allNotes].sort((a, b) => {
+                      const dateA = a.date && a.date.seconds ? new Date(a.date.seconds * 1000) : new Date(a.date || 0);
+                      const dateB = b.date && b.date.seconds ? new Date(b.date.seconds * 1000) : new Date(b.date || 0);
+                      return dateB - dateA; // Newest first
+                    });
+
+                    // Render the combined timeline
+                    return combinedTimeline.map((item, index) => {
+                      if (item.type === 'status') {
+                        // Render status step
+                        return (
+                          <div key={`status-${index}`} className="mb-4">
+                            <div className="flex items-center">
+                              <div className="w-4 h-4 rounded-full bg-[#b76e79] mr-3 flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">
+                                  {(() => {
+                                    // Find the step number for this status
+                                    const statusInfo = statusFlow.find(s => s.status === item.data.status);
+                                    return statusInfo?.step || statusFlow.findIndex(s => s.status === item.data.status) + 1;
+                                  })()}
+                                </span>
+                              </div>
+                              <span className="text-gray-700 font-medium">{item.data.status}</span>
+                              <span className="text-gray-500 ml-2 sm:ml-auto text-xs">
+                                {formatSubmissionDate(item.data.date)}
+                              </span>
+                            </div>
+
+                            {/* Show tentative date if available */}
+                            {item.data.tentativeDate && (
+                              <div className="ml-7 mt-2">
+                                <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded inline-flex items-center">
+                                  <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                  </svg>
+                                  Next update: {formatSubmissionDate(item.data.tentativeDate)}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ));
+                        );
+                      } else {
+                        // Render note
+                        return (
+                          <div key={`note-${index}`} className="mb-4 ml-7 relative">
+                            <div className="absolute -left-4 top-0 h-full w-px bg-[#b76e79] opacity-30"></div>
+                            <div className="absolute -left-4 top-3 w-2 h-2 rounded-full bg-[#b76e79] opacity-50"></div>
+
+                            <div className="p-3 bg-gray-50 rounded-md border-l-4 border-[#b76e79] border-opacity-30">
+                              <div className="flex justify-between items-start">
+                                <div className="flex items-start">
+                                  <svg className="h-4 w-4 text-[#b76e79] mt-0.5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                  </svg>
+                                  <p className="text-sm text-gray-700">{item.data.note}</p>
+                                </div>
+                                <span className="text-gray-400 text-xs ml-2 flex-shrink-0">
+                                  {formatSubmissionDate(item.data.date)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                    });
                   })()}
                 </div>
 
-                {/* {application.documents?.length > 0 && (
-                  <div className="mt-4">
-                    <h4 className="font-medium mb-2 text-gray-700">Uploaded Documents</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {application.documents.map((doc, index) => (
-                        <div key={index} className="border rounded-md p-2 text-sm">
-                          <p className="font-medium">{doc.type}</p>
-                          <a
-                            href={doc.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            View Document
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )} */}
+
               </div>
             </div>
           ))}

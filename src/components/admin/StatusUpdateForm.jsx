@@ -58,6 +58,12 @@ const StatusUpdateForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Validate that note is provided
+    if (!statusNote || statusNote.trim() === '') {
+      alert('Please provide a status note. This is required to update the application status.');
+      return;
+    }
+
     // Validate required documents if status is "Additional Documents Needed"
     if (newStatus === 'Additional Documents Needed') {
       const validDocuments = requiredDocuments.filter(doc => doc && doc.trim() !== '');
@@ -72,9 +78,9 @@ const StatusUpdateForm = ({
   };
   return (
     <div className="bg-white shadow overflow-hidden rounded-lg sticky top-20">
-      <div className="px-4 py-5 sm:px-6 bg-gray-50">
-        <h2 className="text-lg font-medium text-gray-900">Update Status</h2>
-        <p className="mt-1 max-w-2xl text-sm text-gray-500">Change the application status.</p>
+      <div className="px-4 py-5 sm:px-6 bg-[#b76e79] text-white">
+        <h2 className="text-lg font-medium">Update Status</h2>
+        <p className="mt-1 max-w-2xl text-sm text-white text-opacity-90">Change the application status Here.</p>
       </div>
       <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
         {updateSuccess && (
@@ -108,7 +114,7 @@ const StatusUpdateForm = ({
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700">
                 Status
@@ -118,13 +124,31 @@ const StatusUpdateForm = ({
                 name="status"
                 value={newStatus}
                 onChange={(e) => setNewStatus(e.target.value)}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#b76e79] focus:border-[#b76e79] sm:text-sm rounded-md"
                 required
               >
                 {statusOptions.map(status => (
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-md border-l-4 border-[#b76e79]">
+              <label htmlFor="note" className="block text-sm font-medium text-gray-700">
+                Status Note <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                id="note"
+                name="note"
+                rows={2}
+                value={statusNote}
+                onChange={(e) => setStatusNote(e.target.value)}
+                className="shadow-sm focus:ring-[#b76e79] focus:border-[#b76e79] mt-2 block w-full sm:text-sm border-gray-300 rounded-md"
+                placeholder="Add details about this status update. "
+                required
+              />
+              
+              
             </div>
 
             <div>
@@ -141,7 +165,7 @@ const StatusUpdateForm = ({
                   id="tentativeDate"
                   value={tentativeDate}
                   onChange={(e) => setTentativeDate(e.target.value)}
-                  className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                  className="focus:ring-[#b76e79] focus:border-[#b76e79] block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">
@@ -208,28 +232,30 @@ const StatusUpdateForm = ({
               </div>
             )}
 
-            {/* <div>
-              <label htmlFor="note" className="block text-sm font-medium text-gray-700">
-                Note (Optional)
-              </label>
-              <textarea
-                id="note"
-                name="note"
-                rows={3}
-                value={statusNote}
-                onChange={(e) => setStatusNote(e.target.value)}
-                className="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md"
-                placeholder="Add a note about this status change..."
-              />
-            </div> */}
+
 
             <div>
               <button
                 type="submit"
                 disabled={isUpdating}
-                className={`w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isUpdating ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#b76e79] hover:bg-[#a25c67] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b76e79] transition-colors ${isUpdating ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                {isUpdating ? 'Updating...' : 'Update Status'}
+                {isUpdating ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Updating Status...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Update Status
+                  </>
+                )}
               </button>
             </div>
           </div>

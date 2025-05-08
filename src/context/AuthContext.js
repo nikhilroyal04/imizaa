@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import VisaTypeModal from '@/components/VisaTypeModal';
 
 const AuthContext = createContext();
 
@@ -19,21 +20,15 @@ export const AuthProvider = ({ children }) => {
     return null;
   });
 
-  // Store the authentication token separately for easier access
-  const [authToken, setAuthToken] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('user');
-      const parsedUser = savedUser ? JSON.parse(savedUser) : null;
-      return parsedUser?.token || '';
-    }
-    return '';
-  });
+  // We'll use the token from the user object directly
   const [loading, setLoading] = useState(true);
+  const [showVisaTypeModal, setShowVisaTypeModal] = useState(false);
   const router = useRouter();
 
   // Save user to localStorage when it changes
   useEffect(() => {
     if (typeof window !== 'undefined' && user) {
+      console.log('AuthContext - Saving user to localStorage:', `${user.username} (${user.role})`);
       localStorage.setItem('user', JSON.stringify(user));
     }
   }, [user]);
@@ -50,6 +45,7 @@ export const AuthProvider = ({ children }) => {
       // If we already have a user in state from localStorage, don't validate immediately
       // This prevents unnecessary API calls and potential logout on page navigation
       if (user) {
+        console.log('AuthContext - Already have user in state:', `${user.username} (${user.role})`);
         setLoading(false);
         return;
       }
@@ -138,7 +134,6 @@ export const AuthProvider = ({ children }) => {
 
           // Also store token separately for easier access
           localStorage.setItem('authToken', data.token);
-          setAuthToken(data.token);
         }
 
         // Set user in state (with token)
@@ -147,12 +142,18 @@ export const AuthProvider = ({ children }) => {
           token: data.token
         });
 
-        // Redirect admin users directly to admin dashboard
+        // For admin users, redirect directly to admin dashboard
+        // For regular users, show the visa type selection modal
         if (data.user.role === 'admin') {
           console.log('Admin user detected, redirecting to admin dashboard');
+          console.log('Admin user data:', data.user);
           router.push('/admin');
         } else {
-          router.push('/');
+          console.log('Regular user detected, showing visa type modal');
+          console.log('Regular user data:', data.user);
+          // Show the modal immediately and don't redirect
+          // The modal will handle redirection after selection
+          setShowVisaTypeModal(true);
         }
         return { success: true };
       } else {
@@ -207,11 +208,16 @@ export const AuthProvider = ({ children }) => {
           token: data.token
         });
 
-        // Redirect admin users directly to admin dashboard
+        // For admin users, redirect directly to admin dashboard
+        // For regular users, show the visa type selection modal
         if (data.user.role === 'admin') {
+          console.log('Admin user detected, redirecting to admin dashboard');
           router.push('/admin');
         } else {
-          router.push('/');
+          console.log('Regular user detected, showing visa type modal');
+          // Show the modal immediately and don't redirect
+          // The modal will handle redirection after selection
+          setShowVisaTypeModal(true);
         }
         return { success: true };
       } else {
@@ -266,11 +272,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Function to handle closing the visa type modal
+  const handleCloseVisaTypeModal = () => {
+    setShowVisaTypeModal(false);
+    // When the modal is closed (either by selection or cancel), redirect to home
+    router.push('/');
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, isAuthenticated: !!user }}
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        isAuthenticated: !!user
+      }}
     >
       {children}
+      {/* Visa Type Selection Modal */}
+      <VisaTypeModal
+        isOpen={showVisaTypeModal}
+        onClose={handleCloseVisaTypeModal}
+      />
     </AuthContext.Provider>
   );
 };
