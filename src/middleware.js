@@ -12,16 +12,35 @@ export async function middleware(request) {
     }
 
     try {
-      // Verify the token
-      const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+      // Define both the new and old JWT secrets for backward compatibility
+      const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2023';
+      const OLD_JWT_SECRET = 'your-production-key'; // The previous secret
 
       // Make sure token is a string
       const tokenString = String(token);
 
-      const { payload } = await jwtVerify(
-        tokenString,
-        new TextEncoder().encode(JWT_SECRET)
-      );
+      // Try to verify with the current secret first
+      let payload;
+      try {
+        const result = await jwtVerify(
+          tokenString,
+          new TextEncoder().encode(JWT_SECRET)
+        );
+        payload = result.payload;
+      } catch (newSecretError) {
+        // If that fails, try with the old secret
+        try {
+          const result = await jwtVerify(
+            tokenString,
+            new TextEncoder().encode(OLD_JWT_SECRET)
+          );
+          payload = result.payload;
+          console.log('Token verified with old secret in middleware');
+        } catch (oldSecretError) {
+          // If both fail, throw the original error
+          throw newSecretError;
+        }
+      }
 
       // Check if user is admin
       if (payload.role !== 'admin') {

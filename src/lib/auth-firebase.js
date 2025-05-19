@@ -1,13 +1,15 @@
 import { auth } from './firebase';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
   updateProfile,
   onAuthStateChanged
 } from 'firebase/auth';
 import { getUserByEmail, createUser } from './firestore';
+import jwt from 'jsonwebtoken';
+import { getCookie } from 'cookies-next';
 
 // Register a new user
 export async function registerUser(email, password, username, phoneNumber) {
@@ -15,10 +17,10 @@ export async function registerUser(email, password, username, phoneNumber) {
     // Create user in Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
+
     // Update profile with username
     await updateProfile(user, { displayName: username });
-    
+
     // Create user document in Firestore
     await createUser({
       uid: user.uid,
@@ -27,7 +29,7 @@ export async function registerUser(email, password, username, phoneNumber) {
       phoneNumber,
       role: 'user'
     });
-    
+
     return {
       success: true,
       user: {
@@ -52,10 +54,10 @@ export async function signIn(email, password) {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
+
     // Get additional user data from Firestore
     const userData = await getUserByEmail(email);
-    
+
     return {
       success: true,
       user: {
@@ -120,4 +122,51 @@ export function getCurrentUser() {
 // Listen to auth state changes
 export function onAuthStateChange(callback) {
   return onAuthStateChanged(auth, callback);
+}
+
+// Verify JWT token from request
+export async function verifyToken(req) {
+  // Define both the new and old JWT secrets for backward compatibility
+  const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2023';
+  const OLD_JWT_SECRET = 'your-production-key'; // The previous secret
+
+  try {
+    // Get token from cookie
+    const token = getCookie('token', { req });
+
+    if (!token) {
+      return null;
+    }
+
+    // Make sure token is a string
+    const tokenString = String(token);
+
+    // Try to verify with the current secret
+    let decoded;
+    try {
+      decoded = jwt.verify(tokenString, JWT_SECRET);
+    } catch (newSecretError) {
+      // If that fails, try with the old secret
+      try {
+        decoded = jwt.verify(tokenString, OLD_JWT_SECRET);
+        console.log('Token verified with old secret in verifyToken function');
+      } catch (oldSecretError) {
+        // If both fail, log and return null
+        console.error('Token verification failed with both secrets:', newSecretError);
+        return null;
+      }
+    }
+
+    // Verify that the user still exists in the database
+    const user = await getUserByEmail(decoded.email);
+
+    if (!user) {
+      return null;
+    }
+
+    return user;
+  } catch (error) {
+    console.error('Token verification error:', error);
+    return null;
+  }
 }

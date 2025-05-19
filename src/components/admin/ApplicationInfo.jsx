@@ -69,6 +69,25 @@ const ApplicationInfo = ({ application, getStatusColor }) => {
             <dt className="text-sm font-medium text-gray-500">User ID</dt>
             <dd className="mt-1 text-sm text-gray-900">{application.userId || 'N/A'}</dd>
           </div>
+
+          {application.agentId && (
+            <>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Assigned Agent</dt>
+                <dd className="mt-1 text-sm text-gray-900">{application.agentName || 'Unknown Agent'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Agent Email</dt>
+                <dd className="mt-1 text-sm text-gray-900">{application.agentEmail || 'N/A'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Accepted At</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {formatFirestoreDate(application.acceptedAt) || 'N/A'}
+                </dd>
+              </div>
+            </>
+          )}
         </dl>
       </div>
     </div>

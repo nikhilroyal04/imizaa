@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import { FaPhone, FaCalendarAlt, FaEdit, FaTrash, FaTimes, FaCheck, FaUserCircle, FaTag } from 'react-icons/fa';
+import AdminLayout from '@/components/admin/AdminLayout';
 
 export default function ContactsAdmin() {
   const { user, loading } = useAuth();
@@ -291,7 +292,7 @@ export default function ContactsAdmin() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-white">
+    <AdminLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Contact Submissions</h1>
 
@@ -373,14 +374,14 @@ export default function ContactsAdmin() {
                         <div className="flex space-x-3">
                           <button
                             onClick={() => openContactModal(contact)}
-                            className="text-indigo-600 hover:text-indigo-900"
+                            className="text-indigo-600 hover:text-indigo-900 cursor-pointer p-2 hover:bg-indigo-50 rounded-full"
                             title="Edit Contact"
                           >
                             <FaEdit />
                           </button>
                           <button
                             onClick={() => deleteContact(contact.id || contact._id)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 cursor-pointer p-2 hover:bg-red-50 rounded-full"
                             title="Delete Contact"
                           >
                             <FaTrash />
@@ -416,14 +417,14 @@ export default function ContactsAdmin() {
                     <div className="flex justify-end space-x-3 mt-2">
                       <button
                         onClick={() => openContactModal(contact)}
-                        className="p-2 text-indigo-600 hover:text-indigo-900"
+                        className="p-2 text-indigo-600 hover:text-indigo-900 cursor-pointer hover:bg-indigo-50 rounded-full"
                         title="Edit Contact"
                       >
                         <FaEdit />
                       </button>
                       <button
                         onClick={() => deleteContact(contact.id || contact._id)}
-                        className="p-2 text-red-600 hover:text-red-900"
+                        className="p-2 text-red-600 hover:text-red-900 cursor-pointer hover:bg-red-50 rounded-full"
                         title="Delete Contact"
                       >
                         <FaTrash />
@@ -513,6 +514,6 @@ export default function ContactsAdmin() {
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }

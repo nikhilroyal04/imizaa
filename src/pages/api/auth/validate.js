@@ -2,7 +2,9 @@ import jwt from 'jsonwebtoken';
 import { getCookie } from 'cookies-next';
 import { getUserByEmail } from '@/lib/firestore';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// Define both the new and old JWT secrets for backward compatibility
+const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2023';
+const OLD_JWT_SECRET = 'your-production-key'; // The previous secret
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -23,8 +25,20 @@ export default async function handler(req, res) {
     // Make sure token is a string
     const tokenString = String(token);
 
-    // Verify token
-    const decoded = jwt.verify(tokenString, JWT_SECRET);
+    // Try to verify with the current secret
+    let decoded;
+    try {
+      decoded = jwt.verify(tokenString, JWT_SECRET);
+    } catch (newSecretError) {
+      // If that fails, try with the old secret
+      try {
+        decoded = jwt.verify(tokenString, OLD_JWT_SECRET);
+        console.log('Token verified with old secret in validate API');
+      } catch (oldSecretError) {
+        // If both fail, throw the original error
+        throw newSecretError;
+      }
+    }
 
     // Verify that the user still exists in the database
     const user = await getUserByEmail(decoded.email);
@@ -36,14 +50,26 @@ export default async function handler(req, res) {
       });
     }
 
+    // Include verification status for agents
+    const userResponse = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+      projectCount: user.projectCount || 0,
+    };
+
+    // Add verification fields for agents
+    if (user.role === 'agent') {
+      userResponse.verificationStatus = user.verificationStatus || 'approved'; // Default to approved for existing agents
+      userResponse.verificationDate = user.verificationDate || new Date().toISOString();
+      userResponse.acceptedApplications = user.acceptedApplications || [];
+    }
+
     res.status(200).json({
       success: true,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      }
+      user: userResponse
     });
   } catch (error) {
     console.error('Validation error:', error);

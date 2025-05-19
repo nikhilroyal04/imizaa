@@ -4,7 +4,7 @@ import { registerUser } from '@/lib/auth-firebase';
 import { getUserByEmail, createUser } from '@/lib/firestore';
 import bcrypt from 'bcrypt';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2023';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { username, email, phoneNumber, password } = req.body;
+    const { username, email, phoneNumber, password, userType } = req.body;
 
     // Check if user already exists
     const userExists = await getUserByEmail(email);
@@ -28,14 +28,24 @@ export default async function handler(req, res) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Determine user role based on userType
+    const role = userType === 'agent' ? 'agent' : 'user';
+
     // Create user in Firestore
     const userData = {
       username,
       email,
       phoneNumber,
       password: hashedPassword,
-      role: 'user',
-      createdAt: new Date().toISOString()
+      role,
+      // Note: createdAt will be set by the addDocument function using serverTimestamp()
+      // For agents, initialize project count and set verification status
+      ...(role === 'agent' && {
+        projectCount: 0,
+        acceptedApplications: [],
+        verificationStatus: 'pending',
+        verificationDate: new Date().toISOString()
+      })
     };
 
     const user = await createUser(userData);
@@ -61,16 +71,25 @@ export default async function handler(req, res) {
     // For debugging in production
     console.log('Signup successful, token set in cookie');
 
+    // Include verification status for agents
+    const userResponse = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+    };
+
+    // Add verification fields for agents
+    if (user.role === 'agent') {
+      userResponse.verificationStatus = user.verificationStatus;
+      userResponse.verificationDate = user.verificationDate;
+    }
+
     res.status(201).json({
       success: true,
       token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        role: user.role,
-      },
+      user: userResponse,
     });
   } catch (error) {
     console.error('Signup error:', error);

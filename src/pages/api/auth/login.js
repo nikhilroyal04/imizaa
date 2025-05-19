@@ -4,7 +4,7 @@ import { signIn } from '@/lib/auth-firebase';
 import bcrypt from 'bcrypt';
 import { getUserByEmail } from '@/lib/firestore';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2023';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -64,16 +64,27 @@ export default async function handler(req, res) {
     // For debugging in production
     console.log('Login successful, token set in cookie');
 
+    // Include verification status for agents
+    const userResponse = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+      projectCount: user.projectCount || 0,
+    };
+
+    // Add verification fields for agents
+    if (user.role === 'agent') {
+      userResponse.verificationStatus = user.verificationStatus || 'approved'; // Default to approved for existing agents
+      userResponse.verificationDate = user.verificationDate || new Date().toISOString();
+      userResponse.acceptedApplications = user.acceptedApplications || [];
+    }
+
     res.status(200).json({
       success: true,
       token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        role: user.role,
-      },
+      user: userResponse,
     });
   } catch (error) {
     console.error('Login error:', error);

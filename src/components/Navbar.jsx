@@ -29,6 +29,9 @@ const Navbar = () => {
     if (user && user.role === 'admin') {
       e.preventDefault();
       router.push('/admin');
+    } else if (user && user.role === 'agent') {
+      e.preventDefault();
+      router.push('/agent');
     }
   };
 
@@ -50,7 +53,7 @@ const Navbar = () => {
                 {user.role === 'admin' ? (
                   // Admin users
                   <div className="flex items-center space-x-4">
-                    
+
                     <Link
                       href="/admin"
                       className="text-gray-700 hover:text-gray-900 font-medium flex items-center"
@@ -60,7 +63,25 @@ const Navbar = () => {
                     </Link>
                     <button
                       onClick={logout}
+                      className="text-gray-700 hover:text-gray-900 font-medium flex items-center cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-md transition-colors"
+                    >
+                      <FaSignOutAlt className="mr-2 text-gray-500" />
+                      Logout
+                    </button>
+                  </div>
+                ) : user.role === 'agent' ? (
+                  // Agent users
+                  <div className="flex items-center space-x-4">
+                    <Link
+                      href="/agent"
                       className="text-gray-700 hover:text-gray-900 font-medium flex items-center"
+                    >
+                      <FaTachometerAlt className="mr-2 text-gray-500" />
+                      Agent Dashboard
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="text-gray-700 hover:text-gray-900 font-medium flex items-center cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-md transition-colors"
                     >
                       <FaSignOutAlt className="mr-2 text-gray-500" />
                       Logout
@@ -130,7 +151,7 @@ const Navbar = () => {
                               setIsDropdownOpen(false);
                               logout();
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                           >
                             <div className="flex items-center">
                               <FaSignOutAlt className="mr-2 text-gray-500" />
@@ -222,6 +243,17 @@ const Navbar = () => {
                       Admin Dashboard
                     </div>
                   </Link>
+                ) : user.role === 'agent' ? (
+                  // Agent links
+                  <Link
+                    href="/agent"
+                    className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    <div className="flex items-center">
+                      <FaTachometerAlt className="mr-3 text-gray-500" />
+                      Agent Dashboard
+                    </div>
+                  </Link>
                 ) : (
                   // Regular user links
                   <Link
@@ -238,7 +270,7 @@ const Navbar = () => {
                 {/* Logout button for all users */}
                 <button
                   onClick={logout}
-                  className="block w-full text-left px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 cursor-pointer"
                 >
                   <div className="flex items-center">
                     <FaSignOutAlt className="mr-3 text-gray-500" />

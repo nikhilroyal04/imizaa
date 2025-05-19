@@ -142,18 +142,31 @@ export const AuthProvider = ({ children }) => {
           token: data.token
         });
 
-        // For admin users, redirect directly to admin dashboard
-        // For regular users, show the visa type selection modal
+        // Redirect based on user role
         if (data.user.role === 'admin') {
           console.log('Admin user detected, redirecting to admin dashboard');
           console.log('Admin user data:', data.user);
           router.push('/admin');
+        } else if (data.user.role === 'agent') {
+          console.log('Agent user detected, redirecting to agent dashboard');
+          console.log('Agent user data:', data.user);
+          router.push('/agent');
         } else {
-          console.log('Regular user detected, showing visa type modal');
+          console.log('Regular user detected');
           console.log('Regular user data:', data.user);
-          // Show the modal immediately and don't redirect
-          // The modal will handle redirection after selection
-          setShowVisaTypeModal(true);
+
+          // Check if user has already made a selection
+          const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+
+          if (hasSelectedVisa) {
+            console.log('User has already made a visa selection, redirecting to home');
+            router.push('/');
+          } else {
+            console.log('User has not made a visa selection yet, showing modal');
+            // Show the modal immediately and don't redirect
+            // The modal will handle redirection after selection
+            setShowVisaTypeModal(true);
+          }
         }
         return { success: true };
       } else {
@@ -168,7 +181,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Register user
-  const register = async (username, email, phoneNumber, password) => {
+  const register = async (username, email, phoneNumber, password, userType = 'user') => {
     try {
       setLoading(true);
       const res = await fetch('/api/auth/signup', {
@@ -177,7 +190,7 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache',
         },
-        body: JSON.stringify({ username, email, phoneNumber, password }),
+        body: JSON.stringify({ username, email, phoneNumber, password, userType }),
         credentials: 'include', // Include cookies in the request
       });
 
@@ -208,16 +221,28 @@ export const AuthProvider = ({ children }) => {
           token: data.token
         });
 
-        // For admin users, redirect directly to admin dashboard
-        // For regular users, show the visa type selection modal
+        // Redirect based on user role
         if (data.user.role === 'admin') {
           console.log('Admin user detected, redirecting to admin dashboard');
           router.push('/admin');
+        } else if (data.user.role === 'agent') {
+          console.log('Agent user detected, redirecting to agent dashboard');
+          router.push('/agent');
         } else {
-          console.log('Regular user detected, showing visa type modal');
-          // Show the modal immediately and don't redirect
-          // The modal will handle redirection after selection
-          setShowVisaTypeModal(true);
+          console.log('Regular user detected');
+
+          // Check if user has already made a selection
+          const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+
+          if (hasSelectedVisa) {
+            console.log('User has already made a visa selection, redirecting to home');
+            router.push('/');
+          } else {
+            console.log('User has not made a visa selection yet, showing modal');
+            // Show the modal immediately and don't redirect
+            // The modal will handle redirection after selection
+            setShowVisaTypeModal(true);
+          }
         }
         return { success: true };
       } else {
@@ -251,9 +276,30 @@ export const AuthProvider = ({ children }) => {
         console.error('Logout API error:', error);
       }
 
-      // Clear localStorage
+      // Clear user data from localStorage but preserve visa selection flag
       if (typeof window !== 'undefined') {
+        // Save the visa selection flag
+        const hasSelectedVisa = localStorage.getItem('hasSelectedVisa');
+        const selectedCountry = localStorage.getItem('selectedCountry');
+        const selectedCountryName = localStorage.getItem('selectedCountryName');
+        const selectedVisaType = localStorage.getItem('selectedVisaType');
+
+        // Clear user data
         localStorage.removeItem('user');
+
+        // Restore visa selection data
+        if (hasSelectedVisa) {
+          localStorage.setItem('hasSelectedVisa', hasSelectedVisa);
+        }
+        if (selectedCountry) {
+          localStorage.setItem('selectedCountry', selectedCountry);
+        }
+        if (selectedCountryName) {
+          localStorage.setItem('selectedCountryName', selectedCountryName);
+        }
+        if (selectedVisaType) {
+          localStorage.setItem('selectedVisaType', selectedVisaType);
+        }
       }
 
       // Always clear the user state and redirect regardless of API success
@@ -263,7 +309,28 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error);
       // Still try to log out locally even if there's an error
       if (typeof window !== 'undefined') {
+        // Save the visa selection flag
+        const hasSelectedVisa = localStorage.getItem('hasSelectedVisa');
+        const selectedCountry = localStorage.getItem('selectedCountry');
+        const selectedCountryName = localStorage.getItem('selectedCountryName');
+        const selectedVisaType = localStorage.getItem('selectedVisaType');
+
+        // Clear user data
         localStorage.removeItem('user');
+
+        // Restore visa selection data
+        if (hasSelectedVisa) {
+          localStorage.setItem('hasSelectedVisa', hasSelectedVisa);
+        }
+        if (selectedCountry) {
+          localStorage.setItem('selectedCountry', selectedCountry);
+        }
+        if (selectedCountryName) {
+          localStorage.setItem('selectedCountryName', selectedCountryName);
+        }
+        if (selectedVisaType) {
+          localStorage.setItem('selectedVisaType', selectedVisaType);
+        }
       }
       setUser(null);
       router.push('/login');
@@ -279,6 +346,21 @@ export const AuthProvider = ({ children }) => {
     router.push('/');
   };
 
+  // Function to update user data (for updating project count, etc.)
+  const updateUserData = (newData) => {
+    if (!user) return;
+
+    const updatedUser = { ...user, ...newData };
+
+    // Update localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+
+    // Update state
+    setUser(updatedUser);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -287,6 +369,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        updateUserData,
         isAuthenticated: !!user
       }}
     >

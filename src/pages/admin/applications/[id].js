@@ -9,6 +9,7 @@ import StatusHistory from '@/components/admin/StatusHistory';
 import StatusUpdateForm from '@/components/admin/StatusUpdateForm';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import NotFoundMessage from '@/components/admin/NotFoundMessage';
+import AdminLayout from '@/components/admin/AdminLayout';
 
 export default function ApplicationDetail() {
   const { user, loading } = useAuth();
@@ -212,7 +213,7 @@ export default function ApplicationDetail() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-white pt-16">
+    <AdminLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ApplicationHeader title="Application Details" />
 
@@ -267,6 +268,6 @@ export default function ApplicationDetail() {
           <NotFoundMessage />
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }

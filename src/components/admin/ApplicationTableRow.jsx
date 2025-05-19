@@ -26,6 +26,16 @@ const ApplicationTableRow = ({ application, getStatusColor, formatDate }) => {
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {formatDate(application.submissionDateISO || application.submissionDate)}
       </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        {application.agentId ? (
+          <div>
+            <div className="text-sm text-gray-900">{application.agentName || 'Assigned'}</div>
+            <div className="text-xs text-gray-500">{formatDate(application.acceptedAt)}</div>
+          </div>
+        ) : (
+          <span className="text-xs text-gray-500">Not assigned</span>
+        )}
+      </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <div className="flex space-x-2">
           <Link

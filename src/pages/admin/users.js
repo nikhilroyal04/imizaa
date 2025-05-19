@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import { FaUser, FaEnvelope, FaCalendarAlt, FaEdit, FaTrash, FaTimes, FaUserShield, FaUserCog, FaPhone } from 'react-icons/fa';
+import AdminLayout from '@/components/admin/AdminLayout';
 
 export default function UsersAdmin() {
   const { user, loading } = useAuth();
@@ -190,6 +191,8 @@ export default function UsersAdmin() {
         return 'bg-red-100 text-red-800';
       case 'user':
         return 'bg-blue-100 text-blue-800';
+      case 'agent':
+        return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -292,7 +295,7 @@ export default function UsersAdmin() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-white">
+    <AdminLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">User Management</h1>
 
@@ -383,14 +386,18 @@ export default function UsersAdmin() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadgeColor(userData.role)}`}>
-                          {userData.role === 'admin' ? 'Administrator' : 'User'}
+                          {userData.role === 'admin'
+                            ? 'Administrator'
+                            : userData.role === 'agent'
+                              ? 'Agent'
+                              : 'User'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-3">
                           <button
                             onClick={() => openUserModal(userData)}
-                            className="text-indigo-600 hover:text-indigo-900"
+                            className="text-indigo-600 hover:text-indigo-900 cursor-pointer p-2 hover:bg-indigo-50 rounded-full"
                             title="Edit User"
                           >
                             <FaEdit />
@@ -398,7 +405,7 @@ export default function UsersAdmin() {
                           {(userData.id || userData._id || userData.uid) !== user.id && (
                             <button
                               onClick={() => deleteUser(userData.id || userData._id || userData.uid)}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 hover:text-red-900 cursor-pointer p-2 hover:bg-red-50 rounded-full"
                               title="Delete User"
                             >
                               <FaTrash />
@@ -423,7 +430,11 @@ export default function UsersAdmin() {
                         <span className="text-sm font-medium text-gray-900">{userData.username}</span>
                       </div>
                       <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadgeColor(userData.role)}`}>
-                        {userData.role === 'admin' ? 'Administrator' : 'User'}
+                        {userData.role === 'admin'
+                          ? 'Administrator'
+                          : userData.role === 'agent'
+                            ? 'Agent'
+                            : 'User'}
                       </span>
                     </div>
 
@@ -445,7 +456,7 @@ export default function UsersAdmin() {
                     <div className="flex justify-end space-x-3 mt-2">
                       <button
                         onClick={() => openUserModal(userData)}
-                        className="p-2 text-indigo-600 hover:text-indigo-900"
+                        className="p-2 text-indigo-600 hover:text-indigo-900 cursor-pointer hover:bg-indigo-50 rounded-full"
                         title="Edit User"
                       >
                         <FaEdit />
@@ -453,7 +464,7 @@ export default function UsersAdmin() {
                       {(userData.id || userData._id || userData.uid) !== user.id && (
                         <button
                           onClick={() => deleteUser(userData.id || userData._id || userData.uid)}
-                          className="p-2 text-red-600 hover:text-red-900"
+                          className="p-2 text-red-600 hover:text-red-900 cursor-pointer hover:bg-red-50 rounded-full"
                           title="Delete User"
                         >
                           <FaTrash />
@@ -513,6 +524,7 @@ export default function UsersAdmin() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="user">Regular User</option>
+                    <option value="agent">Agent</option>
                     <option value="admin">Administrator</option>
                   </select>
                 </div>
@@ -523,7 +535,9 @@ export default function UsersAdmin() {
                     <span>
                       {userRole === 'admin'
                         ? 'Administrators have full access to all features including user management and sensitive data.'
-                        : 'Regular users can only access their own data and applications.'}
+                        : userRole === 'agent'
+                          ? 'Agents can view and process visa applications. They can accept applications and update their status.'
+                          : 'Regular users can only access their own data and applications.'}
                     </span>
                   </p>
                 </div>
@@ -548,6 +562,6 @@ export default function UsersAdmin() {
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }

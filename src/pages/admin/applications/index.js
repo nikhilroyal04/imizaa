@@ -6,6 +6,7 @@ import axios from 'axios';
 import ApplicationFilters from '@/components/admin/ApplicationFilters';
 import ApplicationTable from '@/components/admin/ApplicationTable';
 import ApplicationStatistics from '@/components/admin/ApplicationStatistics';
+import AdminLayout from '@/components/admin/AdminLayout';
 
 export default function AdminApplications() {
   const { user, loading } = useAuth();
@@ -225,7 +226,7 @@ export default function AdminApplications() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-white pt-16">
+    <AdminLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Visa Applications</h1>
@@ -272,6 +273,6 @@ export default function AdminApplications() {
         {/* Statistics */}
         <ApplicationStatistics applications={applications} />
       </div>
-    </div>
+    </AdminLayout>
   );
 }

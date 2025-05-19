@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { FaGoogle, FaFacebook } from 'react-icons/fa';
+import { FaGoogle, FaFacebook, FaUser, FaUserTie } from 'react-icons/fa';
 
 export default function Signup() {
   const [username, setUsername] = useState('');
@@ -11,6 +11,7 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [userType, setUserType] = useState('user'); // 'user' or 'agent'
 
   const { register } = useAuth();
 
@@ -53,7 +54,7 @@ export default function Signup() {
       return;
     }
 
-    const result = await register(username, email, phoneNumber, password);
+    const result = await register(username, email, phoneNumber, password, userType);
 
     if (!result.success) {
       setError(result.message || 'Registration failed');
@@ -75,6 +76,40 @@ export default function Signup() {
         </div>
 
         <div className="p-6">
+          {/* User Type Selection */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">Sign up as</h2>
+            <div className="flex justify-center space-x-4">
+              <button
+                type="button"
+                onClick={() => setUserType('user')}
+                className={`flex-1 flex flex-col items-center justify-center p-4 rounded-lg border ${
+                  userType === 'user'
+                    ? 'bg-rose-50 border-rose-500 text-rose-700'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <FaUser className="text-2xl mb-2" />
+                <span className="font-medium">User</span>
+                <p className="text-xs mt-1 text-gray-500">Apply for visa services</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setUserType('agent')}
+                className={`flex-1 flex flex-col items-center justify-center p-4 rounded-lg border ${
+                  userType === 'agent'
+                    ? 'bg-rose-50 border-rose-500 text-rose-700'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <FaUserTie className="text-2xl mb-2" />
+                <span className="font-medium">Agent</span>
+                <p className="text-xs mt-1 text-gray-500">Process visa applications</p>
+              </button>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">

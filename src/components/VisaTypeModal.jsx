@@ -1,24 +1,121 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { FaPlane, FaBriefcase, FaGraduationCap } from 'react-icons/fa';
+import { FaPlane, FaBriefcase, FaGraduationCap, FaChevronDown } from 'react-icons/fa';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/firebase/config';
 
 const VisaTypeModal = ({ isOpen, onClose }) => {
   const router = useRouter();
+  const [countries, setCountries] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedVisaType, setSelectedVisaType] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [documentChecklist, setDocumentChecklist] = useState([]);
+  const [step, setStep] = useState(1); // 1: Country selection, 2: Visa type selection, 3: View checklist
 
-  if (!isOpen) return null;
+  // Fetch countries from Firebase
+  useEffect(() => {
+    if (!isOpen) return;
 
+    const fetchCountries = async () => {
+      try {
+        setLoading(true);
+        const countriesCollection = collection(db, 'countries');
+        const countrySnapshot = await getDocs(countriesCollection);
+        const countryList = countrySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        // Sort countries alphabetically by name
+        const sortedCountries = countryList.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+
+        setCountries(sortedCountries);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching countries:', err);
+        setError('Failed to load countries. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCountries();
+  }, [isOpen]);
+
+  // Handle country selection
+  const handleCountrySelect = (e) => {
+    const countryId = e.target.value;
+    setSelectedCountry(countryId);
+
+    // Find the selected country object
+    const country = countries.find(c => c.id === countryId);
+
+    // Reset visa type when country changes
+    setSelectedVisaType('');
+    setDocumentChecklist([]);
+  };
+
+  // Handle visa type selection
   const handleVisaTypeSelect = (visaType) => {
+    setSelectedVisaType(visaType);
+
+    // Find the selected country and visa type to get document checklist
+    const country = countries.find(c => c.id === selectedCountry);
+    if (country) {
+      const visaInfo = country.visaInfo.find(v => v.type === visaType);
+      if (visaInfo && visaInfo.documentChecklist) {
+        setDocumentChecklist(visaInfo.documentChecklist);
+      } else {
+        setDocumentChecklist([]);
+      }
+    }
+  };
+
+  // Handle view checklist button click
+  const handleViewChecklist = () => {
+    // Store selections in localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedCountry', selectedCountry);
+      localStorage.setItem('selectedCountryName', countries.find(c => c.id === selectedCountry)?.name || '');
+      localStorage.setItem('selectedVisaType', selectedVisaType);
+
+      // Set flag to indicate user has made a selection
+      localStorage.setItem('hasSelectedVisa', 'true');
+
+      // Debug log
+      console.log('Stored in localStorage:', {
+        selectedCountry,
+        selectedCountryName: countries.find(c => c.id === selectedCountry)?.name || '',
+        selectedVisaType,
+        hasSelectedVisa: true
+      });
+    }
+
     // Close the modal
     onClose();
 
-    // Store the selected visa type in localStorage for future use
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('selectedVisaType', visaType);
-    }
+    // Debug log
+    console.log('Redirecting to:', `/destination/${selectedCountry}`);
 
-    // Redirect to the home page
-    router.push('/');
+    // Redirect to the destination page with the selected country ID
+    try {
+      router.push(`/destination/${selectedCountry}`);
+    } catch (error) {
+      console.error('Error during redirection:', error);
+
+      // Fallback approach using window.location
+      if (typeof window !== 'undefined') {
+        console.log('Using fallback redirection method');
+        window.location.href = `/destination/${selectedCountry}`;
+      }
+    }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
@@ -38,62 +135,118 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
             <div className="sm:flex sm:items-start">
               <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                 <h3 className="text-2xl leading-6 font-bold text-gray-900 mb-2 text-center">
-                  Select Your Visa Type
+                  Immigration Services
                 </h3>
-                <p className="text-center text-gray-500 mb-4">
-                  Click on one of the options below to continue
-                </p>
-                <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-3">
-                  {/* Tourist Visa */}
-                  <div
-                    onClick={() => handleVisaTypeSelect('Tourist')}
-                    className="flex flex-col items-center justify-center p-6 border-2 border-gray-200 rounded-lg hover:border-[#b76e79] hover:bg-[#fdf0f2] transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-                    title="Click to select Tourist Visa"
-                  >
-                    <div className="text-[#b76e79] text-4xl mb-3">
-                      <FaPlane />
-                    </div>
-                    <h4 className="text-lg font-medium text-gray-900">Tourist</h4>
-                    <p className="text-sm text-gray-500 mt-2 text-center">For vacation and leisure travel</p>
-                  </div>
 
-                  {/* Work Visa */}
-                  <div
-                    onClick={() => handleVisaTypeSelect('Work')}
-                    className="flex flex-col items-center justify-center p-6 border-2 border-gray-200 rounded-lg hover:border-[#b76e79] hover:bg-[#fdf0f2] transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-                    title="Click to select Work Visa"
-                  >
-                    <div className="text-[#b76e79] text-4xl mb-3">
-                      <FaBriefcase />
+                {/* Country Selection */}
+                <div className="mb-6 mt-8">
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">Choose Country</h4>
+                  <div className="relative">
+                    <select
+                      value={selectedCountry}
+                      onChange={handleCountrySelect}
+                      className="block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#b76e79] focus:border-[#b76e79] appearance-none"
+                      disabled={loading}
+                    >
+                      <option value="">Country</option>
+                      {countries.map((country) => (
+                        <option key={country.id} value={country.id}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                      <FaChevronDown className="text-gray-400" />
                     </div>
-                    <h4 className="text-lg font-medium text-gray-900">Work</h4>
-                    <p className="text-sm text-gray-500 mt-2 text-center">For business and employment</p>
                   </div>
+                  {loading && (
+                    <p className="text-sm text-gray-500 mt-2">Loading countries...</p>
+                  )}
+                  {error && (
+                    <p className="text-sm text-red-500 mt-2">{error}</p>
+                  )}
+                </div>
 
-                  {/* Student Visa */}
-                  <div
-                    onClick={() => handleVisaTypeSelect('Student')}
-                    className="flex flex-col items-center justify-center p-6 border-2 border-gray-200 rounded-lg hover:border-[#b76e79] hover:bg-[#fdf0f2] transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-                    title="Click to select Student Visa"
-                  >
-                    <div className="text-[#b76e79] text-4xl mb-3">
-                      <FaGraduationCap />
+                {/* Visa Type Selection */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">Select Purpose</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Study Visa */}
+                    <div
+                      onClick={() => handleVisaTypeSelect('Student')}
+                      className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all duration-300 cursor-pointer ${
+                        selectedVisaType === 'Student'
+                          ? 'border-[#b76e79] bg-[#333333] text-white'
+                          : 'border-gray-200 hover:border-[#b76e79] bg-white text-gray-900'
+                      }`}
+                    >
+                      <h4 className="font-medium">Study</h4>
                     </div>
-                    <h4 className="text-lg font-medium text-gray-900">Student</h4>
-                    <p className="text-sm text-gray-500 mt-2 text-center">For education and study</p>
+
+                    {/* Work Visa */}
+                    <div
+                      onClick={() => handleVisaTypeSelect('Work')}
+                      className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all duration-300 cursor-pointer ${
+                        selectedVisaType === 'Work'
+                          ? 'border-[#b76e79] bg-white text-gray-900'
+                          : 'border-gray-200 hover:border-[#b76e79] bg-white text-gray-900'
+                      }`}
+                    >
+                      <h4 className="font-medium">Work</h4>
+                    </div>
+
+                    {/* Tourist Visa */}
+                    <div
+                      onClick={() => handleVisaTypeSelect('Tourist')}
+                      className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all duration-300 cursor-pointer ${
+                        selectedVisaType === 'Tourist'
+                          ? 'border-[#b76e79] bg-white text-gray-900'
+                          : 'border-gray-200 hover:border-[#b76e79] bg-white text-gray-900'
+                      }`}
+                    >
+                      <h4 className="font-medium">Tourist</h4>
+                    </div>
                   </div>
+                </div>
+
+                {/* View Checklist Button */}
+                <div className="mt-8">
+                  <button
+                    onClick={handleViewChecklist}
+                    disabled={!selectedCountry || !selectedVisaType}
+                    className={`w-full py-3 px-4 rounded-md text-white font-medium ${
+                      selectedCountry && selectedVisaType
+                        ? 'bg-[#333333] hover:bg-[#222222]'
+                        : 'bg-gray-300 cursor-not-allowed'
+                    }`}
+                  >
+                    View Checklist
+                  </button>
+
+                  {/* Direct link as fallback */}
+                  {selectedCountry && selectedVisaType && (
+                    <div className="mt-2 text-center">
+                      <a
+                        href={`/destination/${selectedCountry}`}
+                        className="text-xs text-gray-500 hover:underline"
+                        onClick={(e) => {
+                          // Store data in localStorage before navigating
+                          if (typeof window !== 'undefined') {
+                            localStorage.setItem('selectedCountry', selectedCountry);
+                            localStorage.setItem('selectedCountryName', countries.find(c => c.id === selectedCountry)?.name || '');
+                            localStorage.setItem('selectedVisaType', selectedVisaType);
+                            localStorage.setItem('hasSelectedVisa', 'true');
+                            console.log('Direct link clicked, stored data in localStorage with hasSelectedVisa flag');
+                          }
+                        }}
+                      >
+                        If button doesn't work, click here
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              type="button"
-              onClick={onClose}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b76e79] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              Cancel
-            </button>
           </div>
         </div>
       </div>

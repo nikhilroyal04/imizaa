@@ -93,6 +93,16 @@ export async function updateDocument(collectionName, id, data) {
     };
 
     await updateDoc(docRef, dataWithTimestamp);
+
+    // Get the updated document
+    const updatedDoc = await getDoc(docRef);
+    if (updatedDoc.exists()) {
+      return {
+        id: updatedDoc.id,
+        ...updatedDoc.data()
+      };
+    }
+
     return { id, ...dataWithTimestamp };
   } catch (error) {
     console.error(`Error updating document in ${collectionName}:`, error);
@@ -322,6 +332,34 @@ export async function getUserByEmail(email) {
     return users.length > 0 ? users[0] : null;
   } catch (error) {
     console.error('Error getting user by email:', error);
+    throw error;
+  }
+}
+
+export async function getUserById(id) {
+  try {
+    return await getDocument(COLLECTIONS.USERS, id);
+  } catch (error) {
+    console.error('Error getting user by ID:', error);
+    throw error;
+  }
+}
+
+export async function updateUser(id, userData) {
+  try {
+    return await updateDocument(COLLECTIONS.USERS, id, userData);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+}
+
+export async function getUsersByRole(role) {
+  try {
+    const constraints = [where('role', '==', role)];
+    return await getDocuments(COLLECTIONS.USERS, constraints);
+  } catch (error) {
+    console.error('Error getting users by role:', error);
     throw error;
   }
 }

@@ -3,7 +3,8 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-import { FaPhone, FaUsers, FaPassport, FaGlobe } from 'react-icons/fa';
+import { FaPhone, FaUsers, FaPassport, FaGlobe, FaUserTie } from 'react-icons/fa';
+import AdminLayout from '@/components/admin/AdminLayout';
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
@@ -94,7 +95,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-white pt-16">
+    <AdminLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
 
@@ -175,6 +176,17 @@ export default function AdminDashboard() {
                 </div>
               </Link>
 
+              <Link href="/admin/agents" className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center">
+                  <div className="bg-purple-100 p-3 rounded-full">
+                    <FaUserTie className="h-6 w-6 text-purple-500" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-lg font-medium text-gray-900">Agent Management</h3>
+                    <p className="text-sm text-gray-500">Verify and manage agents</p>
+                  </div>
+                </div>
+              </Link>
 
             </div>
           </div>
@@ -253,6 +265,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { FaGoogle, FaFacebook } from 'react-icons/fa';
+import { FaGoogle, FaFacebook, FaUser, FaUserTie } from 'react-icons/fa';
 
 export default function Login() {
   const [email, setEmail] = useState('');

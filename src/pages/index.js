@@ -3,6 +3,7 @@ import HeroSection from "@/components/HeroSection";
 import HomeCard from "@/components/HomeCard";
 import ProcessSteps from "@/components/ProcessSteps";
 import Testimonials from "@/components/Testimonials";
+import SelectedVisaInfo from "@/components/SelectedVisaInfo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +19,7 @@ export default function Home() {
   return (
     <div className={`min-h-screen bg-white ${geistSans.variable} ${geistMono.variable}`}>
       <HeroSection />
+      <SelectedVisaInfo />
       <HomeCard />
       <ProcessSteps />
       <Testimonials />

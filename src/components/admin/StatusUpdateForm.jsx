@@ -147,8 +147,8 @@ const StatusUpdateForm = ({
                 placeholder="Add details about this status update. "
                 required
               />
-              
-              
+
+
             </div>
 
             <div>
@@ -182,7 +182,7 @@ const StatusUpdateForm = ({
                   <button
                     type="button"
                     onClick={addDocumentField}
-                    className="inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
                   >
                     <FaPlus className="h-3 w-3" aria-hidden="true" />
                   </button>
@@ -210,7 +210,7 @@ const StatusUpdateForm = ({
                         <button
                           type="button"
                           onClick={() => removeDocumentField(index)}
-                          className="inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          className="inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer"
                         >
                           <FaMinus className="h-3 w-3" aria-hidden="true" />
                         </button>
@@ -238,7 +238,7 @@ const StatusUpdateForm = ({
               <button
                 type="submit"
                 disabled={isUpdating}
-                className={`w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#b76e79] hover:bg-[#a25c67] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b76e79] transition-colors ${isUpdating ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#b76e79] hover:bg-[#a25c67] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b76e79] transition-colors ${isUpdating ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 {isUpdating ? (
                   <>
