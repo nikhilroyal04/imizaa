@@ -16,6 +16,55 @@ export default async function handler(req, res) {
     const token = getCookie('token', { req, res });
 
     if (!token) {
+      console.log('No token found in cookies');
+
+      // Check if token is in Authorization header as fallback
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const headerToken = authHeader.substring(7);
+        console.log('Found token in Authorization header');
+
+        // Verify the token from header
+        try {
+          const decoded = jwt.verify(headerToken, JWT_SECRET);
+
+          // Verify that the user still exists in the database
+          const user = await getUserByEmail(decoded.email);
+
+          if (!user) {
+            return res.status(401).json({
+              success: false,
+              message: 'User not found',
+            });
+          }
+
+          // Include verification status for agents
+          const userResponse = {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            role: user.role,
+            projectCount: user.projectCount || 0,
+          };
+
+          // Add verification fields for agents
+          if (user.role === 'agent') {
+            userResponse.verificationStatus = user.verificationStatus || 'approved';
+            userResponse.verificationDate = user.verificationDate || new Date().toISOString();
+            userResponse.acceptedApplications = user.acceptedApplications || [];
+          }
+
+          return res.status(200).json({
+            success: true,
+            user: userResponse
+          });
+        } catch (error) {
+          console.error('Error verifying token from header:', error);
+        }
+      }
+
+      // If we get here, no valid token was found
       return res.status(401).json({
         success: false,
         message: 'Not authenticated',
@@ -24,6 +73,8 @@ export default async function handler(req, res) {
 
     // Make sure token is a string
     const tokenString = String(token);
+
+    console.log('Token found in cookies, validating...');
 
     // Try to verify with the current secret
     let decoded;

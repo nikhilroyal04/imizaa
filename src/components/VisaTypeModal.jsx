@@ -18,6 +18,8 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) return;
 
+    console.log('VisaTypeModal is open, fetching countries');
+
     const fetchCountries = async () => {
       try {
         setLoading(true);
@@ -33,6 +35,7 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
           a.name.localeCompare(b.name)
         );
 
+        console.log(`Fetched ${sortedCountries.length} countries`);
         setCountries(sortedCountries);
         setError(null);
       } catch (err) {
@@ -46,13 +49,16 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
     fetchCountries();
   }, [isOpen]);
 
+  // Debug log when modal visibility changes
+  useEffect(() => {
+    console.log('VisaTypeModal isOpen state changed:', isOpen);
+  }, [isOpen]);
+
   // Handle country selection
   const handleCountrySelect = (e) => {
     const countryId = e.target.value;
     setSelectedCountry(countryId);
-
-    // Find the selected country object
-    const country = countries.find(c => c.id === countryId);
+    console.log('Country selected:', countryId);
 
     // Reset visa type when country changes
     setSelectedVisaType('');
@@ -77,6 +83,8 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
 
   // Handle view checklist button click
   const handleViewChecklist = () => {
+    console.log('View Checklist button clicked');
+
     // Store selections in localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedCountry', selectedCountry);
@@ -85,6 +93,15 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
 
       // Set flag to indicate user has made a selection
       localStorage.setItem('hasSelectedVisa', 'true');
+
+      // If this is a new user, remove the isNewUser flag from localStorage
+      // to prevent showing the modal again on subsequent logins
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.isNewUser) {
+        console.log('Updating isNewUser flag to false for user:', user.username);
+        user.isNewUser = false;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
 
       // Debug log
       console.log('Stored in localStorage:', {
@@ -96,23 +113,28 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
     }
 
     // Close the modal
+    console.log('Closing modal');
     onClose();
 
     // Debug log
     console.log('Redirecting to:', `/destination/${selectedCountry}`);
 
     // Redirect to the destination page with the selected country ID
-    try {
-      router.push(`/destination/${selectedCountry}`);
-    } catch (error) {
-      console.error('Error during redirection:', error);
+    // Add a small delay before redirecting to ensure the modal is closed properly
+    setTimeout(() => {
+      try {
+        console.log('Executing router.push');
+        router.push(`/destination/${selectedCountry}`);
+      } catch (error) {
+        console.error('Error during redirection:', error);
 
-      // Fallback approach using window.location
-      if (typeof window !== 'undefined') {
-        console.log('Using fallback redirection method');
-        window.location.href = `/destination/${selectedCountry}`;
+        // Fallback approach using window.location
+        if (typeof window !== 'undefined') {
+          console.log('Using fallback redirection method');
+          window.location.href = `/destination/${selectedCountry}`;
+        }
       }
-    }
+    }, 100);
   };
 
   if (!isOpen) return null;
@@ -227,16 +249,38 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
                   {selectedCountry && selectedVisaType && (
                     <div className="mt-2 text-center">
                       <a
-                        href={`/destination/${selectedCountry}`}
+                        href="#"
                         className="text-xs text-gray-500 hover:underline"
                         onClick={(e) => {
+                          e.preventDefault(); // Prevent default navigation
+                          console.log('Direct link clicked');
+
                           // Store data in localStorage before navigating
                           if (typeof window !== 'undefined') {
                             localStorage.setItem('selectedCountry', selectedCountry);
                             localStorage.setItem('selectedCountryName', countries.find(c => c.id === selectedCountry)?.name || '');
                             localStorage.setItem('selectedVisaType', selectedVisaType);
                             localStorage.setItem('hasSelectedVisa', 'true');
+
+                            // If this is a new user, remove the isNewUser flag from localStorage
+                            const user = JSON.parse(localStorage.getItem('user') || '{}');
+                            if (user.isNewUser) {
+                              console.log('Updating isNewUser flag to false for user:', user.username);
+                              user.isNewUser = false;
+                              localStorage.setItem('user', JSON.stringify(user));
+                            }
+
                             console.log('Direct link clicked, stored data in localStorage with hasSelectedVisa flag');
+
+                            // Close the modal
+                            console.log('Closing modal from direct link');
+                            onClose();
+
+                            // Add a small delay before redirecting
+                            setTimeout(() => {
+                              console.log('Redirecting to destination page from direct link');
+                              router.push(`/destination/${selectedCountry}`);
+                            }, 100);
                           }
                         }}
                       >

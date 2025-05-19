@@ -124,37 +124,47 @@ export async function deleteDocument(collectionName, id) {
 // Application-specific functions
 export async function getUserApplications(userId) {
   try {
-    // First try with the composite index
-    try {
-      const constraints = [
-        where('userId', '==', userId),
-        orderBy('submissionDate', 'desc')
-      ];
+    console.log(`Getting applications for user: ${userId}`);
 
-      return await getDocuments(COLLECTIONS.APPLICATIONS, constraints);
-    } catch (error) {
-      // If we get an index error, fall back to a simpler query
-      if (error.code === 'failed-precondition') {
-        console.warn('Composite index not found, falling back to simple query');
+    // Skip the composite index attempt and directly use the simple query
+    // This avoids the index error completely
+    const constraints = [
+      where('userId', '==', userId)
+    ];
 
-        // Just filter by userId without sorting
-        const constraints = [
-          where('userId', '==', userId)
-        ];
+    console.log('Fetching applications with simple query');
+    const applications = await getDocuments(COLLECTIONS.APPLICATIONS, constraints);
+    console.log(`Found ${applications.length} applications`);
 
-        const applications = await getDocuments(COLLECTIONS.APPLICATIONS, constraints);
-
-        // Sort manually in memory
-        return applications.sort((a, b) => {
-          const dateA = a.submissionDate ? new Date(a.submissionDate) : new Date(0);
-          const dateB = b.submissionDate ? new Date(b.submissionDate) : new Date(0);
-          return dateB - dateA; // descending order
-        });
-      } else {
-        // If it's not an index error, rethrow
-        throw error;
+    // Sort manually in memory using the ISO string date which is more reliable
+    return applications.sort((a, b) => {
+      // First try to use the ISO string date which is more reliable
+      if (a.submissionDateISO && b.submissionDateISO) {
+        return new Date(b.submissionDateISO) - new Date(a.submissionDateISO);
       }
-    }
+
+      // Fall back to the Firestore timestamp if available
+      if (a.submissionDate && b.submissionDate) {
+        // Handle Firestore timestamps (objects with seconds and nanoseconds)
+        if (a.submissionDate.seconds && b.submissionDate.seconds) {
+          return b.submissionDate.seconds - a.submissionDate.seconds;
+        }
+
+        // Handle date strings
+        return new Date(b.submissionDate) - new Date(a.submissionDate);
+      }
+
+      // Last resort - use creation time if available
+      if (a.createdAt && b.createdAt) {
+        if (a.createdAt.seconds && b.createdAt.seconds) {
+          return b.createdAt.seconds - a.createdAt.seconds;
+        }
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+
+      // If no dates are available, maintain original order
+      return 0;
+    });
   } catch (error) {
     console.error('Error getting user applications:', error);
     throw error;
@@ -385,29 +395,32 @@ export async function createContact(contactData) {
 
 export async function getAllContacts() {
   try {
-    // First try with the index
-    try {
-      const constraints = [orderBy('createdAt', 'desc')];
-      return await getDocuments(COLLECTIONS.CONTACTS, constraints);
-    } catch (error) {
-      // If we get an index error, fall back to a simpler query
-      if (error.code === 'failed-precondition') {
-        console.warn('Index not found for contacts, falling back to simple query');
+    console.log('Getting all contacts');
 
-        // Get all contacts without sorting
-        const contacts = await getDocuments(COLLECTIONS.CONTACTS);
+    // Skip the index attempt and directly use the simple query
+    // This avoids the index error completely
+    const contacts = await getDocuments(COLLECTIONS.CONTACTS);
+    console.log(`Found ${contacts.length} contacts`);
 
-        // Sort manually in memory
-        return contacts.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-          return dateB - dateA; // descending order
-        });
-      } else {
-        // If it's not an index error, rethrow
-        throw error;
+    // Sort manually in memory with improved handling of different date formats
+    return contacts.sort((a, b) => {
+      // Handle Firestore timestamps (objects with seconds and nanoseconds)
+      if (a.createdAt && b.createdAt) {
+        if (a.createdAt.seconds && b.createdAt.seconds) {
+          return b.createdAt.seconds - a.createdAt.seconds;
+        }
+
+        // Handle date strings
+        try {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        } catch (e) {
+          console.warn('Error comparing dates:', e);
+        }
       }
-    }
+
+      // If no dates are available or comparison fails, maintain original order
+      return 0;
+    });
   } catch (error) {
     console.error('Error getting all contacts:', error);
     throw error;

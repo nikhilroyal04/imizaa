@@ -20,61 +20,117 @@ export default async function handler(req, res) {
     // First try to verify using the token in the cookie
     user = await verifyToken(req);
 
+    console.log('Verification result:', user ? 'User found' : 'No user found');
+
     if (user && user.role === 'admin') {
+      console.log('User is admin, authentication successful');
       isAuthenticated = true;
     }
 
     // If not authenticated yet, check for token in query parameter
     if (!isAuthenticated && req.query.token) {
       try {
+        const tokenString = String(req.query.token);
+
+        // Basic validation: JWT tokens should have 3 parts separated by dots
+        if (!tokenString || !tokenString.includes('.') || tokenString.split('.').length !== 3) {
+          console.error('Malformed query token format:', tokenString);
+          throw new Error('Malformed token');
+        }
+
+        console.log('Attempting to verify query token');
+
         // Try to verify with the current secret
         let decoded;
         try {
-          decoded = jwt.verify(req.query.token, JWT_SECRET);
+          decoded = jwt.verify(tokenString, JWT_SECRET);
+          console.log('Query token verified with current secret');
         } catch (newSecretError) {
+          console.log('Failed to verify query token with current secret, trying old secret');
           // If that fails, try with the old secret
           try {
-            decoded = jwt.verify(req.query.token, OLD_JWT_SECRET);
-            console.log('Token verified with old secret');
+            decoded = jwt.verify(tokenString, OLD_JWT_SECRET);
+            console.log('Query token verified with old secret');
           } catch (oldSecretError) {
+            console.error('Query token verification failed with both secrets:', newSecretError);
             throw newSecretError; // If both fail, throw the original error
           }
+        }
+
+        if (!decoded || !decoded.email) {
+          console.error('Decoded query token missing email field');
+          throw new Error('Invalid token payload');
         }
 
         // Get user from database
         user = await getUserByEmail(decoded.email);
 
+        console.log('Query token user lookup result:', user ? 'User found' : 'No user found');
+
         if (user && user.role === 'admin') {
+          console.log('Query token user is admin, authentication successful');
           isAuthenticated = true;
         }
       } catch (tokenError) {
-        console.error('Token verification error:', tokenError);
+        console.error('Query token verification error:', tokenError);
       }
     }
 
     // If still not authenticated, check for token in Authorization header
     if (!isAuthenticated && req.headers.authorization) {
       try {
+        // Check if authorization header has the correct format
+        if (!req.headers.authorization.startsWith('Bearer ')) {
+          console.error('Invalid Authorization header format, missing Bearer prefix');
+          throw new Error('Invalid Authorization header format');
+        }
+
         const token = req.headers.authorization.split(' ')[1]; // Extract token from "Bearer <token>"
+
+        if (!token) {
+          console.error('Empty token in Authorization header');
+          throw new Error('Empty token in Authorization header');
+        }
+
+        const tokenString = String(token);
+
+        // Basic validation: JWT tokens should have 3 parts separated by dots
+        if (!tokenString || !tokenString.includes('.') || tokenString.split('.').length !== 3) {
+          console.error('Malformed Authorization token format:', tokenString);
+          throw new Error('Malformed token');
+        }
+
+        console.log('Attempting to verify Authorization token');
 
         // Try to verify with the current secret
         let decoded;
         try {
-          decoded = jwt.verify(token, JWT_SECRET);
+          decoded = jwt.verify(tokenString, JWT_SECRET);
+          console.log('Authorization token verified with current secret');
         } catch (newSecretError) {
+          console.log('Failed to verify Authorization token with current secret, trying old secret');
           // If that fails, try with the old secret
           try {
-            decoded = jwt.verify(token, OLD_JWT_SECRET);
-            console.log('Token verified with old secret');
+            decoded = jwt.verify(tokenString, OLD_JWT_SECRET);
+            console.log('Authorization token verified with old secret');
           } catch (oldSecretError) {
+            console.error('Authorization token verification failed with both secrets:', newSecretError);
             throw newSecretError; // If both fail, throw the original error
           }
+        }
+
+        if (!decoded || !decoded.email) {
+          console.error('Decoded Authorization token missing email field');
+          throw new Error('Invalid token payload');
         }
 
         // Get user from database
         user = await getUserByEmail(decoded.email);
 
+        console.log('Authorization token user lookup result:', user ? 'User found' : 'No user found');
+
         if (user && user.role === 'admin') {
+          console.log('Authorization token user is admin, authentication successful');
           isAuthenticated = true;
         }
       } catch (headerError) {

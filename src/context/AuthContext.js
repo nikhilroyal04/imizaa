@@ -184,6 +184,8 @@ export const AuthProvider = ({ children }) => {
   const register = async (username, email, phoneNumber, password, userType = 'user') => {
     try {
       setLoading(true);
+      console.log('Attempting registration for:', email, 'as', userType);
+
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
@@ -203,6 +205,9 @@ export const AuthProvider = ({ children }) => {
       }
 
       const data = await res.json();
+      console.log('Registration response received, success:', data.success);
+      console.log('User data from registration:', data.user);
+      console.log('isNewUser flag:', data.user?.isNewUser);
 
       if (data.success) {
         // Save user data and token to localStorage for persistence
@@ -213,6 +218,10 @@ export const AuthProvider = ({ children }) => {
             token: data.token // Store token for API authorization header
           };
           localStorage.setItem('user', JSON.stringify(userWithToken));
+          console.log('User data saved to localStorage with token');
+
+          // Also store token separately for easier access
+          localStorage.setItem('authToken', data.token);
         }
 
         // Set user in state (with token)
@@ -231,17 +240,32 @@ export const AuthProvider = ({ children }) => {
         } else {
           console.log('Regular user detected');
 
-          // Check if user has already made a selection
-          const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+          // For new user registrations, always show the visa type modal
+          if (data.user.isNewUser) {
+            console.log('New user detected, showing visa type modal');
+            // Clear any existing visa selection to ensure they make a fresh choice
+            localStorage.removeItem('hasSelectedVisa');
+            localStorage.removeItem('selectedCountry');
+            localStorage.removeItem('selectedCountryName');
+            localStorage.removeItem('selectedVisaType');
 
-          if (hasSelectedVisa) {
-            console.log('User has already made a visa selection, redirecting to home');
-            router.push('/');
-          } else {
-            console.log('User has not made a visa selection yet, showing modal');
             // Show the modal immediately and don't redirect
             // The modal will handle redirection after selection
             setShowVisaTypeModal(true);
+            console.log('Modal visibility set to true for new user');
+          } else {
+            // For existing users, check if they've already made a selection
+            const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+
+            if (hasSelectedVisa) {
+              console.log('User has already made a visa selection, redirecting to home');
+              router.push('/');
+            } else {
+              console.log('User has not made a visa selection yet, showing modal');
+              // Show the modal immediately and don't redirect
+              // The modal will handle redirection after selection
+              setShowVisaTypeModal(true);
+            }
           }
         }
         return { success: true };
@@ -341,9 +365,10 @@ export const AuthProvider = ({ children }) => {
 
   // Function to handle closing the visa type modal
   const handleCloseVisaTypeModal = () => {
+    console.log('Modal closed');
     setShowVisaTypeModal(false);
-    // When the modal is closed (either by selection or cancel), redirect to home
-    router.push('/');
+    // Don't redirect automatically - the modal's handleViewChecklist function will handle redirection
+    // This allows the modal to be closed without redirecting if needed
   };
 
   // Function to update user data (for updating project count, etc.)
@@ -361,6 +386,11 @@ export const AuthProvider = ({ children }) => {
     setUser(updatedUser);
   };
 
+  // Debug log for modal state
+  useEffect(() => {
+    console.log('AuthContext - showVisaTypeModal state changed:', showVisaTypeModal);
+  }, [showVisaTypeModal]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -370,7 +400,9 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateUserData,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
+        showVisaTypeModal, // Expose this state to components
+        setShowVisaTypeModal // Allow components to control the modal
       }}
     >
       {children}

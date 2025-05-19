@@ -135,17 +135,28 @@ export async function verifyToken(req) {
     const token = getCookie('token', { req });
 
     if (!token) {
+      console.log('No token found in cookie');
       return null;
     }
 
-    // Make sure token is a string
+    // Make sure token is a string and validate basic JWT format
     const tokenString = String(token);
+
+    // Basic validation: JWT tokens should have 3 parts separated by dots
+    if (!tokenString || !tokenString.includes('.') || tokenString.split('.').length !== 3) {
+      console.error('Malformed token format:', tokenString);
+      return null;
+    }
+
+    console.log('Attempting to verify token with current secret');
 
     // Try to verify with the current secret
     let decoded;
     try {
       decoded = jwt.verify(tokenString, JWT_SECRET);
+      console.log('Token verified with current secret');
     } catch (newSecretError) {
+      console.log('Failed to verify with current secret, trying old secret');
       // If that fails, try with the old secret
       try {
         decoded = jwt.verify(tokenString, OLD_JWT_SECRET);
@@ -157,10 +168,16 @@ export async function verifyToken(req) {
       }
     }
 
+    if (!decoded || !decoded.email) {
+      console.error('Decoded token missing email field');
+      return null;
+    }
+
     // Verify that the user still exists in the database
     const user = await getUserByEmail(decoded.email);
 
     if (!user) {
+      console.log('User not found in database for email:', decoded.email);
       return null;
     }
 

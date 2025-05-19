@@ -45,7 +45,9 @@ export default async function handler(req, res) {
         acceptedApplications: [],
         verificationStatus: 'pending',
         verificationDate: new Date().toISOString()
-      })
+      }),
+      // Add a flag to indicate this is a new user who needs to select visa type
+      isNewUser: true
     };
 
     const user = await createUser(userData);
@@ -78,6 +80,7 @@ export default async function handler(req, res) {
       email: user.email,
       phoneNumber: user.phoneNumber,
       role: user.role,
+      isNewUser: true, // Always true for new signups
     };
 
     // Add verification fields for agents

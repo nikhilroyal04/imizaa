@@ -54,13 +54,15 @@ export default function Signup() {
       return;
     }
 
+    console.log('Submitting registration for:', email, 'as', userType);
     const result = await register(username, email, phoneNumber, password, userType);
 
     if (!result.success) {
       setError(result.message || 'Registration failed');
+      setIsLoading(false);
     }
 
-    setIsLoading(false);
+    // Note: We don't set isLoading to false on success because the page will redirect
   };
 
   return (
