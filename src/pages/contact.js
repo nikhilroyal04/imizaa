@@ -121,8 +121,8 @@ export default function Contact() {
           <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
             <div className="flex flex-col md:flex-row md:justify-between text-gray-600">
               <p className="mb-2 md:mb-0">Email: contact@immiza.com</p>
-              <p className="mb-2 md:mb-0">Phone: +1 (123) 456-7890</p>
-              <p>Address: 123 Main St, City, Country</p>
+              <p className="mb-2 md:mb-0">Phone: +91 9053603098</p>
+              <p>Address: 123 Main St, City, Country.</p>
             </div>
           </div>
         </div>

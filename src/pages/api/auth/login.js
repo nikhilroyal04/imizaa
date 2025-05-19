@@ -1,10 +1,6 @@
-import jwt from 'jsonwebtoken';
-import { setCookie } from 'cookies-next';
-import { signIn } from '@/lib/auth-firebase';
 import bcrypt from 'bcrypt';
 import { getUserByEmail } from '@/lib/firestore';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2023';
+import { createToken, setTokenCookie } from '@/lib/token-utils';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -43,23 +39,11 @@ export default async function handler(req, res) {
       });
     }
 
-    // Create token
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '30d' }
-    );
+    // Create token using the utility function
+    const token = createToken(user);
 
-    // Set cookie with secure options
-    setCookie('token', token, {
-      req,
-      res,
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-      path: '/',
-      sameSite: 'lax', // 'strict' can cause issues with redirects, 'lax' is a good balance
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Only use secure in production
-    });
+    // Set token in cookie using the utility function
+    setTokenCookie(req, res, token);
 
     // For debugging in production
     console.log('Login successful, token set in cookie');

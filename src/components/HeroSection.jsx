@@ -192,7 +192,7 @@ const HeroSection = () => {
               <p className="text-gray-600 mb-4">OR</p>
 
               <a
-                href="https://wa.me/919876543210"
+                href="https://wa.me/9190536 03098"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center w-full text-green-600 border border-green-600 rounded-md py-3 px-4 hover:bg-green-50 transition-colors"

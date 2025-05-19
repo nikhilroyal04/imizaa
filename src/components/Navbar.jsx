@@ -101,7 +101,7 @@ const Navbar = () => {
 
                     {/* WhatsApp Contact Button */}
                     <a
-                      href="https://wa.me/919876543210"
+                      href="https://wa.me/919053603098"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-4 py-2"
@@ -210,7 +210,7 @@ const Navbar = () => {
 
                 {/* WhatsApp Contact Button - In mobile menu for all users */}
                 <a
-                  href="https://wa.me/919876543210"
+                  href="https://wa.me/919053603098"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block px-4 py-2 text-base font-medium"
@@ -282,7 +282,7 @@ const Navbar = () => {
               <div className="pt-2 pb-3 space-y-1">
                 {/* WhatsApp Contact Button - In mobile menu for non-logged in users too */}
                 <a
-                  href="https://wa.me/919876543210"
+                  href="https://wa.me/919053603098"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block px-4 py-2 text-base font-medium text-green-600 hover:bg-gray-100"
