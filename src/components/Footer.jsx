@@ -98,7 +98,7 @@ const Footer = () => {
                   href="https://wa.me/919876543210"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center bg-[#b76e79] text-white px-4 py-2 rounded-md hover:bg-pink-500 transition-colors"
+                  className="inline-flex items-center bg-[#b76e79] text-white px-4 py-2 rounded-md hover:bg-[#9a5a64] transition-colors"
                 >
                   <BsChatFill className="mr-2" />
                   Chat with us

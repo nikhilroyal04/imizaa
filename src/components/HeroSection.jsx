@@ -147,7 +147,7 @@ const HeroSection = () => {
                   className={`w-full px-4 py-3 border rounded-md focus:ring-[#b76e79] focus:border-[#b76e79] ${
                     submitError ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="+91 (123) 456-7890"
+                  placeholder="+91 "
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   disabled={isSubmitting}

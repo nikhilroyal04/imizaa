@@ -157,7 +157,7 @@ export default function Signup() {
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+91 (123) 456-7890"
+                placeholder="+91"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-rose-500 focus:border-rose-500"
               />
             </div>
