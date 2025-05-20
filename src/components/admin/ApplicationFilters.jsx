@@ -20,20 +20,7 @@ const ApplicationFilters = ({
         {/* Filter Row */}
         <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
           {/* Status Filter */}
-          <div className="flex items-center space-x-2">
-            <FaFilter className="text-gray-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {statusOptions.map(status => (
-                <option key={status} value={status}>
-                  {status === 'all' ? 'All Statuses' : status}
-                </option>
-              ))}
-            </select>
-          </div>
+         
           
           {/* Visa Type Filter */}
           <div className="flex items-center space-x-2">

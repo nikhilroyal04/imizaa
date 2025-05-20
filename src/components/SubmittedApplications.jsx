@@ -235,9 +235,7 @@ export default function SubmittedApplications({ applications: initialApplication
                         )
                         .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
 
-                      // Log for debugging
-                      console.log('Latest status with docs:', latestStatusWithDocs);
-                      console.log('All status history:', application.statusHistory);
+                     
 
                       // If we don't find an entry with requiredDocuments array, try to create one from requiredDocument
                       if (!latestStatusWithDocs) {
