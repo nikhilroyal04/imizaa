@@ -41,9 +41,11 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" onClick={handleLogoClick}>
-              <span className="text-2xl font-bold text-black">IMMIZA</span>
-            </Link>
+            <Link href="/" onClick={handleLogoClick} className="flex items-center space-x-2">
+  <img src="/images/logo.png" alt="IMMIZA Logo" className="h-9 w-9" />
+  <span className="text-3xl font-bold text-black">IMMIZA</span>
+</Link>
+
           </div>
 
           {/* Desktop Auth buttons */}

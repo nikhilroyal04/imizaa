@@ -10,7 +10,10 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
-            <h2 className="text-2xl font-bold text-[#b76e79] mb-4">IMMIZA</h2>
+<h2 className="text-2xl font-bold text-[#b76e79] mb-4 flex items-center space-x-2">
+  <img src="/images/logo.png" alt="IMMIZA Logo" className="h-8 w-8" />
+  <span>IMMIZA</span>
+</h2>
             <p className="mb-4 text-sm">
               Your trusted partner for visa and immigration services. We make the complex visa process simple and stress free.
             </p>
