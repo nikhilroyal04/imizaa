@@ -66,13 +66,16 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-[calc(100vh-64px)] bg-white px-4">
+    <div className="flex justify-center items-center min-h-[calc(100vh-64px)] bg-white px-4 my-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md overflow-hidden">
         <div className="flex">
-          <Link href="/login" className="flex-1 py-4 text-center font-medium bg-gray-100 text-gray-500 hover:bg-gray-200">
+          <Link
+            href="/login"
+            className="flex-1 py-4 text-center font-medium bg-gray-100 text-gray-500 hover:bg-gray-200"
+          >
             Login
           </Link>
-          <button className="flex-1 py-4 text-center font-medium bg-white text-gray-800 border-b-2 border-rose-500">
+          <button className="flex-1 py-4 text-center font-medium bg-white text-gray-800 border-b-2 border-[#b76e79]">
             Sign Up
           </button>
         </div>
@@ -80,34 +83,40 @@ export default function Signup() {
         <div className="p-6">
           {/* User Type Selection */}
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">Sign up as</h2>
+            <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
+              Sign up as
+            </h2>
             <div className="flex justify-center space-x-4">
               <button
                 type="button"
-                onClick={() => setUserType('user')}
+                onClick={() => setUserType("user")}
                 className={`flex-1 flex flex-col items-center justify-center p-4 rounded-lg border ${
-                  userType === 'user'
-                    ? 'bg-rose-50 border-rose-500 text-rose-700'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  userType === "user"
+                    ? "bg-rose-50 border-[#b76e79] text-[#ae5361]"
+                    : "border-gray-300 text-black hover:bg-gray-50"
                 }`}
               >
                 <FaUser className="text-2xl mb-2" />
                 <span className="font-medium">User</span>
-                <p className="text-xs mt-1 text-gray-500">Apply for visa services</p>
+                <p className="text-xs mt-1 text-gray-500">
+                  Apply for visa services
+                </p>
               </button>
 
               <button
                 type="button"
-                onClick={() => setUserType('agent')}
+                onClick={() => setUserType("agent")}
                 className={`flex-1 flex flex-col items-center justify-center p-4 rounded-lg border ${
-                  userType === 'agent'
-                    ? 'bg-rose-50 border-rose-500 text-rose-700'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  userType === "agent"
+                    ? "bg-rose-50border-[#b76e79] text-[#ae5361]"
+                    : "border-gray-300 text-black hover:bg-gray-50"
                 }`}
               >
                 <FaUserTie className="text-2xl mb-2" />
                 <span className="font-medium">Agent</span>
-                <p className="text-xs mt-1 text-gray-500">Process visa applications</p>
+                <p className="text-xs mt-1 text-gray-500">
+                  Process visa applications
+                </p>
               </button>
             </div>
           </div>
@@ -120,7 +129,10 @@ export default function Signup() {
             )}
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Username
               </label>
               <input
@@ -134,7 +146,10 @@ export default function Signup() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email
               </label>
               <input
@@ -148,7 +163,10 @@ export default function Signup() {
             </div>
 
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="phoneNumber"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Phone Number
               </label>
               <input
@@ -163,7 +181,10 @@ export default function Signup() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Password
               </label>
               <input
@@ -177,7 +198,10 @@ export default function Signup() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Confirm Password
               </label>
               <input
@@ -193,39 +217,13 @@ export default function Signup() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:opacity-50"
+              className="w-full py-3 px-4 bg-[#b76e79] hover:bg-[#774149] text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
             >
-              {isLoading ? 'Creating account...' : 'Sign Up'}
+              {isLoading ? "Creating account..." : "Sign Up"}
             </button>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <FaGoogle className="h-5 w-5 mr-2" />
-                Google
-              </button>
-              <button
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <FaFacebook className="h-5 w-5 mr-2" />
-                Facebook
-              </button>
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>

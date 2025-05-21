@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { db } from '@/lib/firebase';
 
 const DocumentChecklist = () => {
   const [loading, setLoading] = useState(true);
@@ -14,34 +14,34 @@ const DocumentChecklist = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // Get data from localStorage
         const countryId = localStorage.getItem('selectedCountry');
         const visaType = localStorage.getItem('selectedVisaType');
         const countryName = localStorage.getItem('selectedCountryName');
-        
+
         if (!countryId || !visaType) {
           setError('No country or visa type selected');
           setLoading(false);
           return;
         }
-        
+
         setVisaType(visaType);
-        
+
         // Fetch country data from Firebase
         const countryRef = doc(db, 'countries', countryId);
         const countrySnap = await getDoc(countryRef);
-        
+
         if (countrySnap.exists()) {
           const countryData = {
             id: countrySnap.id,
             ...countrySnap.data()
           };
           setCountry(countryData);
-          
+
           // Find the visa info for the selected visa type
           const visaInfo = countryData.visaInfo?.find(v => v.type === visaType);
-          
+
           if (visaInfo && visaInfo.documentChecklist) {
             setDocumentChecklist(visaInfo.documentChecklist);
           } else {
@@ -57,7 +57,7 @@ const DocumentChecklist = () => {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 

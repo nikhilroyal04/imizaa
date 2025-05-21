@@ -55,7 +55,7 @@ export default function AdminDashboard() {
     const fetchApplications = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('/api/applications');
+        const response = await axios.get('/api/applications/');
         if (response.data.success) {
           const apps = response.data.applications || [];
           setApplications(apps);

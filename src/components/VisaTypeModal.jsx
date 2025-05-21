@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { FaPlane, FaBriefcase, FaGraduationCap, FaChevronDown } from 'react-icons/fa';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
 
 const VisaTypeModal = ({ isOpen, onClose }) => {
   const router = useRouter();
+  const { user, updateUserData } = useAuth();
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedVisaType, setSelectedVisaType] = useState('');
@@ -82,13 +85,16 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
   };
 
   // Handle view checklist button click
-  const handleViewChecklist = () => {
+  const handleViewChecklist = async () => {
     console.log('View Checklist button clicked');
+
+    // Get the selected country name
+    const selectedCountryName = countries.find(c => c.id === selectedCountry)?.name || '';
 
     // Store selections in localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedCountry', selectedCountry);
-      localStorage.setItem('selectedCountryName', countries.find(c => c.id === selectedCountry)?.name || '');
+      localStorage.setItem('selectedCountryName', selectedCountryName);
       localStorage.setItem('selectedVisaType', selectedVisaType);
 
       // Set flag to indicate user has made a selection
@@ -96,20 +102,57 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
 
       // If this is a new user, remove the isNewUser flag from localStorage
       // to prevent showing the modal again on subsequent logins
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.isNewUser) {
-        console.log('Updating isNewUser flag to false for user:', user.username);
-        user.isNewUser = false;
-        localStorage.setItem('user', JSON.stringify(user));
+      const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (localUser.isNewUser) {
+        console.log('Updating isNewUser flag to false for user:', localUser.username);
+        localUser.isNewUser = false;
+        localStorage.setItem('user', JSON.stringify(localUser));
       }
 
       // Debug log
       console.log('Stored in localStorage:', {
         selectedCountry,
-        selectedCountryName: countries.find(c => c.id === selectedCountry)?.name || '',
+        selectedCountryName,
         selectedVisaType,
         hasSelectedVisa: true
       });
+    }
+
+    // Save preferences to Firebase if user is logged in
+    if (user && user.id) {
+      try {
+        console.log('Saving user preferences to Firebase for user:', user.id);
+
+        // Call the API to update user preferences
+        const response = await axios.post('/api/user/update-preferences', {
+          userId: user.id,
+          selectedCountry,
+          selectedCountryName,
+          selectedVisaType
+        });
+
+        if (response.data.success) {
+          console.log('User preferences saved to Firebase successfully');
+
+          // Update the user data in context if needed
+          if (user.isNewUser) {
+            updateUserData({
+              isNewUser: false,
+              preferences: {
+                selectedCountry,
+                selectedCountryName,
+                selectedVisaType
+              }
+            });
+          }
+        } else {
+          console.error('Failed to save user preferences to Firebase:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error saving user preferences to Firebase:', error);
+      }
+    } else {
+      console.log('User not logged in, preferences only saved to localStorage');
     }
 
     // Close the modal
@@ -162,7 +205,9 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
 
                 {/* Country Selection */}
                 <div className="mb-6 mt-8">
-                  <h4 className="text-lg font-medium text-gray-900 mb-4">Choose Country</h4>
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">
+                    Choose Country
+                  </h4>
                   <div className="relative">
                     <select
                       value={selectedCountry}
@@ -182,7 +227,9 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
                     </div>
                   </div>
                   {loading && (
-                    <p className="text-sm text-gray-500 mt-2">Loading countries...</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Loading countries...
+                    </p>
                   )}
                   {error && (
                     <p className="text-sm text-red-500 mt-2">{error}</p>
@@ -191,15 +238,17 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
 
                 {/* Visa Type Selection */}
                 <div className="mb-6">
-                  <h4 className="text-lg font-medium text-gray-900 mb-4">Select Purpose</h4>
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">
+                    Select Purpose
+                  </h4>
                   <div className="grid grid-cols-3 gap-4">
                     {/* Study Visa */}
                     <div
-                      onClick={() => handleVisaTypeSelect('Student')}
+                      onClick={() => handleVisaTypeSelect("Student")}
                       className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all duration-300 cursor-pointer ${
-                        selectedVisaType === 'Student'
-                          ? 'border-[#b76e79] bg-[#333333] text-white'
-                          : 'border-gray-200 hover:border-[#b76e79] bg-white text-gray-900'
+                        selectedVisaType === "Student"
+                          ? "border-[#b76e79] bg-[#333333] text-white"
+                          : "border-gray-200 hover:border-[#b76e79] bg-white text-gray-900"
                       }`}
                     >
                       <h4 className="font-medium">Study</h4>
@@ -207,11 +256,11 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
 
                     {/* Work Visa */}
                     <div
-                      onClick={() => handleVisaTypeSelect('Work')}
+                      onClick={() => handleVisaTypeSelect("Work")}
                       className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all duration-300 cursor-pointer ${
-                        selectedVisaType === 'Work'
-                          ? 'border-[#b76e79] bg-white text-gray-900'
-                          : 'border-gray-200 hover:border-[#b76e79] bg-white text-gray-900'
+                        selectedVisaType === "Work"
+                          ? "border-[#b76e79] bg-white text-gray-900"
+                          : "border-gray-200 hover:border-[#b76e79] bg-white text-gray-900"
                       }`}
                     >
                       <h4 className="font-medium">Work</h4>
@@ -219,11 +268,11 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
 
                     {/* Tourist Visa */}
                     <div
-                      onClick={() => handleVisaTypeSelect('Tourist')}
+                      onClick={() => handleVisaTypeSelect("Tourist")}
                       className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all duration-300 cursor-pointer ${
-                        selectedVisaType === 'Tourist'
-                          ? 'border-[#b76e79] bg-white text-gray-900'
-                          : 'border-gray-200 hover:border-[#b76e79] bg-white text-gray-900'
+                        selectedVisaType === "Tourist"
+                          ? "border-[#b76e79] bg-white text-gray-900"
+                          : "border-gray-200 hover:border-[#b76e79] bg-white text-gray-900"
                       }`}
                     >
                       <h4 className="font-medium">Tourist</h4>
@@ -238,8 +287,8 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
                     disabled={!selectedCountry || !selectedVisaType}
                     className={`w-full py-3 px-4 rounded-md text-white font-medium ${
                       selectedCountry && selectedVisaType
-                        ? 'bg-[#333333] hover:bg-[#222222]'
-                        : 'bg-gray-300 cursor-not-allowed'
+                        ? "bg-[#b76e79] hover:bg-[#95525c]"
+                        : "bg-gray-300 cursor-not-allowed"
                     }`}
                   >
                     View Checklist
@@ -251,37 +300,116 @@ const VisaTypeModal = ({ isOpen, onClose }) => {
                       <a
                         href="#"
                         className="text-xs text-gray-500 hover:underline"
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.preventDefault(); // Prevent default navigation
-                          console.log('Direct link clicked');
+                          console.log("Direct link clicked");
+
+                          // Get the selected country name
+                          const selectedCountryName =
+                            countries.find((c) => c.id === selectedCountry)
+                              ?.name || "";
 
                           // Store data in localStorage before navigating
-                          if (typeof window !== 'undefined') {
-                            localStorage.setItem('selectedCountry', selectedCountry);
-                            localStorage.setItem('selectedCountryName', countries.find(c => c.id === selectedCountry)?.name || '');
-                            localStorage.setItem('selectedVisaType', selectedVisaType);
-                            localStorage.setItem('hasSelectedVisa', 'true');
+                          if (typeof window !== "undefined") {
+                            localStorage.setItem(
+                              "selectedCountry",
+                              selectedCountry
+                            );
+                            localStorage.setItem(
+                              "selectedCountryName",
+                              selectedCountryName
+                            );
+                            localStorage.setItem(
+                              "selectedVisaType",
+                              selectedVisaType
+                            );
+                            localStorage.setItem("hasSelectedVisa", "true");
 
                             // If this is a new user, remove the isNewUser flag from localStorage
-                            const user = JSON.parse(localStorage.getItem('user') || '{}');
-                            if (user.isNewUser) {
-                              console.log('Updating isNewUser flag to false for user:', user.username);
-                              user.isNewUser = false;
-                              localStorage.setItem('user', JSON.stringify(user));
+                            const localUser = JSON.parse(
+                              localStorage.getItem("user") || "{}"
+                            );
+                            if (localUser.isNewUser) {
+                              console.log(
+                                "Updating isNewUser flag to false for user:",
+                                localUser.username
+                              );
+                              localUser.isNewUser = false;
+                              localStorage.setItem(
+                                "user",
+                                JSON.stringify(localUser)
+                              );
                             }
 
-                            console.log('Direct link clicked, stored data in localStorage with hasSelectedVisa flag');
-
-                            // Close the modal
-                            console.log('Closing modal from direct link');
-                            onClose();
-
-                            // Add a small delay before redirecting
-                            setTimeout(() => {
-                              console.log('Redirecting to destination page from direct link');
-                              router.push(`/destination/${selectedCountry}`);
-                            }, 100);
+                            console.log(
+                              "Direct link clicked, stored data in localStorage with hasSelectedVisa flag"
+                            );
                           }
+
+                          // Save preferences to Firebase if user is logged in
+                          if (user && user.id) {
+                            try {
+                              console.log(
+                                "Saving user preferences to Firebase for user:",
+                                user.id
+                              );
+
+                              // Call the API to update user preferences
+                              const response = await axios.post(
+                                "/api/user/update-preferences",
+                                {
+                                  userId: user.id,
+                                  selectedCountry,
+                                  selectedCountryName,
+                                  selectedVisaType,
+                                }
+                              );
+
+                              if (response.data.success) {
+                                console.log(
+                                  "User preferences saved to Firebase successfully"
+                                );
+
+                                // Update the user data in context if needed
+                                if (user.isNewUser) {
+                                  updateUserData({
+                                    isNewUser: false,
+                                    preferences: {
+                                      selectedCountry,
+                                      selectedCountryName,
+                                      selectedVisaType,
+                                    },
+                                  });
+                                }
+                              } else {
+                                console.error(
+                                  "Failed to save user preferences to Firebase:",
+                                  response.data.message
+                                );
+                              }
+                            } catch (error) {
+                              console.error(
+                                "Error saving user preferences to Firebase:",
+                                error
+                              );
+                            }
+                          } else {
+                            console.log(
+                              "User not logged in, preferences only saved to localStorage"
+                            );
+                          }
+
+                          // Close the modal
+                          console.log("Closing modal from direct link");
+                          onClose();
+
+                          // Add a small delay before redirecting
+                          setTimeout(() => {
+                            console.log(
+                              "Redirecting to destination page from direct link"
+                            );
+                            router.push(`/destination/${selectedCountry}`);
+                          }, 100);
                         }}
                       >
                         If button doesn't work, click here

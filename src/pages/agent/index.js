@@ -7,6 +7,7 @@ import { FaPassport, FaCheckCircle, FaExclamationCircle, FaUser } from 'react-ic
 import AgentLayout from '@/components/agent/AgentLayout';
 import PendingVerificationView from '@/components/agent/PendingVerificationView';
 import RejectedVerificationView from '@/components/agent/RejectedVerificationView';
+import { getUserById } from '@/lib/firestore'; // <-- Add this import
 
 export default function AgentDashboard() {
   const { user, loading, updateUserData } = useAuth();
@@ -17,7 +18,23 @@ export default function AgentDashboard() {
   const [acceptingId, setAcceptingId] = useState(null);
   const [filterType, setFilterType] = useState('accepted'); // 'accepted' or 'all'
 
-  // No need for this effect anymore since we're using the user directly from AuthContext
+  // Fetch latest user data from Firestore on mount or when user.id changes
+  useEffect(() => {
+    const refreshUser = async () => {
+      if (user && user.id) {
+        try {
+          const latestUser = await getUserById(user.id);
+          if (latestUser) {
+            updateUserData(latestUser);
+          }
+        } catch (err) {
+          // Optionally handle error
+        }
+      }
+    };
+    refreshUser();
+    // eslint-disable-next-line
+  }, [user?.id]);
 
   // Fetch all applications
   useEffect(() => {
@@ -125,12 +142,8 @@ export default function AgentDashboard() {
 
   // Check verification status
   const renderDashboardContent = () => {
-    console.log('User data:', user);
-    console.log('User verification status:', user.verificationStatus);
-
     // For existing agents who don't have a verification status, default to 'approved'
     if (!user.verificationStatus) {
-      console.log('No verification status found, defaulting to approved');
       return (
         <>
           <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
@@ -150,20 +163,16 @@ export default function AgentDashboard() {
 
     // If user is not verified yet
     if (user.verificationStatus === 'pending') {
-      console.log('User has pending verification status');
       return <PendingVerificationView verificationDate={user.verificationDate} />;
     }
 
     // If user verification was rejected
     if (user.verificationStatus === 'rejected') {
-      console.log('User has rejected verification status');
       return <RejectedVerificationView
         rejectionReason={user.rejectionReason}
         rejectionDate={user.rejectionDate}
       />;
     }
-
-    console.log('User has approved verification status or other status:', user.verificationStatus);
 
     // If user is verified, show the normal dashboard
     return renderApprovedDashboard();

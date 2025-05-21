@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import { FaCheckCircle } from "react-icons/fa"; // Add this import
 
 export default function VisaApplicationForm({ destinationId: propDestinationId, destinationName: propDestinationName, visaType: propVisaType }) {
   const router = useRouter();
@@ -160,13 +161,29 @@ export default function VisaApplicationForm({ destinationId: propDestinationId, 
       }
 
       // Prepare data for submission
+      // Get user from localStorage and parse it to get the ID
+      let userId = null;
+      if (typeof window !== 'undefined') {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const userObj = JSON.parse(userStr);
+            userId = userObj.id;
+            console.log('Retrieved userId from localStorage:', userId);
+          } catch (error) {
+            console.error('Error parsing user from localStorage:', error);
+          }
+        }
+      }
+
       const submitData = {
         name: formData.name,
         email: formData.email,
         destinationId: formData.destinationId,
         destinationName: formData.destinationName,
         visaType: formData.visaType,
-        documents: uploadedDocuments
+        documents: uploadedDocuments,
+        userId: userId,
       };
 
       // Submit the data to the API
@@ -248,11 +265,11 @@ export default function VisaApplicationForm({ destinationId: propDestinationId, 
             <ul className="list-disc pl-5 text-[#b76e79] text-sm">
             <li>
               If you do not have a document, please <a href="https://wa.me/919053603098" className="text-[#b76e79] underline" target="_blank" rel="noopener noreferrer">contact us</a>.
-              
+
             </li>
           </ul>
-          
-          
+
+
           ) : (
             <p className="text-[#b76e79] text-sm italic">
               No specific documents are required for this visa type.
@@ -264,11 +281,13 @@ export default function VisaApplicationForm({ destinationId: propDestinationId, 
         {documentChecklist.length > 0 ? (
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-700">Upload Documents</h3>
-
             {documentChecklist.map((doc, index) => (
               <div key={index} className="border rounded-md p-4 bg-gray-50">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                   {doc}
+                  {formData.documents[doc] && (
+                    <FaCheckCircle className="text-green-500 inline ml-1" />
+                  )}
                 </label>
                 <input
                   type="file"
@@ -292,8 +311,11 @@ export default function VisaApplicationForm({ destinationId: propDestinationId, 
             <h3 className="text-lg font-medium text-gray-700">Upload Documents</h3>
 
             <div className="border rounded-md p-4 bg-gray-50">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 Passport Photo
+                {formData.documents["Passport Photo"] && (
+                  <FaCheckCircle className="text-green-500 inline ml-1" />
+                )}
               </label>
               <input
                 type="file"
@@ -307,8 +329,11 @@ export default function VisaApplicationForm({ destinationId: propDestinationId, 
             </div>
 
             <div className="border rounded-md p-4 bg-gray-50">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 Passport Front
+                {formData.documents["Passport Front"] && (
+                  <FaCheckCircle className="text-green-500 inline ml-1" />
+                )}
               </label>
               <input
                 type="file"

@@ -155,17 +155,58 @@ export const AuthProvider = ({ children }) => {
           console.log('Regular user detected');
           console.log('Regular user data:', data.user);
 
-          // Check if user has already made a selection
-          const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+          try {
+            // Check if user has preferences in Firebase
+            console.log('Checking user preferences in Firebase for user:', data.user.id);
+            const preferencesResponse = await fetch(`/api/user/check-preferences?userId=${data.user.id}`, {
+              headers: {
+                'Cache-Control': 'no-cache',
+              }
+            });
 
-          if (hasSelectedVisa) {
-            console.log('User has already made a visa selection, redirecting to home');
-            router.push('/');
-          } else {
-            console.log('User has not made a visa selection yet, showing modal');
-            // Show the modal immediately and don't redirect
-            // The modal will handle redirection after selection
-            setShowVisaTypeModal(true);
+            const preferencesData = await preferencesResponse.json();
+            console.log('User preferences check result:', preferencesData);
+
+            if (preferencesData.success && preferencesData.hasPreferences) {
+              console.log('User has preferences in Firebase, redirecting to home');
+
+              // Update localStorage with preferences from Firebase
+              if (typeof window !== 'undefined' && preferencesData.preferences) {
+                localStorage.setItem('selectedCountry', preferencesData.preferences.selectedCountry);
+                localStorage.setItem('selectedCountryName', preferencesData.preferences.selectedCountryName);
+                localStorage.setItem('selectedVisaType', preferencesData.preferences.selectedVisaType);
+                localStorage.setItem('hasSelectedVisa', 'true');
+                console.log('Updated localStorage with preferences from Firebase');
+              }
+
+              router.push('/');
+            } else {
+              // Fallback to localStorage check if Firebase doesn't have preferences
+              const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+
+              if (hasSelectedVisa) {
+                console.log('User has visa selection in localStorage, redirecting to home');
+                router.push('/');
+              } else {
+                console.log('User has no preferences, showing visa type modal');
+                // Show the modal immediately and don't redirect
+                // The modal will handle redirection after selection
+                setShowVisaTypeModal(true);
+              }
+            }
+          } catch (error) {
+            console.error('Error checking user preferences:', error);
+
+            // Fallback to localStorage check if API call fails
+            const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+
+            if (hasSelectedVisa) {
+              console.log('User has visa selection in localStorage, redirecting to home');
+              router.push('/');
+            } else {
+              console.log('User has no preferences, showing visa type modal');
+              setShowVisaTypeModal(true);
+            }
           }
         }
         return { success: true };
@@ -254,17 +295,56 @@ export const AuthProvider = ({ children }) => {
             setShowVisaTypeModal(true);
             console.log('Modal visibility set to true for new user');
           } else {
-            // For existing users, check if they've already made a selection
-            const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+            try {
+              // Check if user has preferences in Firebase
+              console.log('Checking user preferences in Firebase for user:', data.user.id);
+              const preferencesResponse = await fetch(`/api/user/check-preferences?userId=${data.user.id}`, {
+                headers: {
+                  'Cache-Control': 'no-cache',
+                }
+              });
 
-            if (hasSelectedVisa) {
-              console.log('User has already made a visa selection, redirecting to home');
-              router.push('/');
-            } else {
-              console.log('User has not made a visa selection yet, showing modal');
-              // Show the modal immediately and don't redirect
-              // The modal will handle redirection after selection
-              setShowVisaTypeModal(true);
+              const preferencesData = await preferencesResponse.json();
+              console.log('User preferences check result:', preferencesData);
+
+              if (preferencesData.success && preferencesData.hasPreferences) {
+                console.log('User has preferences in Firebase, redirecting to home');
+
+                // Update localStorage with preferences from Firebase
+                if (typeof window !== 'undefined' && preferencesData.preferences) {
+                  localStorage.setItem('selectedCountry', preferencesData.preferences.selectedCountry);
+                  localStorage.setItem('selectedCountryName', preferencesData.preferences.selectedCountryName);
+                  localStorage.setItem('selectedVisaType', preferencesData.preferences.selectedVisaType);
+                  localStorage.setItem('hasSelectedVisa', 'true');
+                  console.log('Updated localStorage with preferences from Firebase');
+                }
+
+                router.push('/');
+              } else {
+                // Fallback to localStorage check if Firebase doesn't have preferences
+                const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+
+                if (hasSelectedVisa) {
+                  console.log('User has visa selection in localStorage, redirecting to home');
+                  router.push('/');
+                } else {
+                  console.log('User has no preferences, showing visa type modal');
+                  setShowVisaTypeModal(true);
+                }
+              }
+            } catch (error) {
+              console.error('Error checking user preferences:', error);
+
+              // Fallback to localStorage check if API call fails
+              const hasSelectedVisa = localStorage.getItem('hasSelectedVisa') === 'true';
+
+              if (hasSelectedVisa) {
+                console.log('User has visa selection in localStorage, redirecting to home');
+                router.push('/');
+              } else {
+                console.log('User has no preferences, showing visa type modal');
+                setShowVisaTypeModal(true);
+              }
             }
           }
         }

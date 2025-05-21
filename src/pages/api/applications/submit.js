@@ -11,16 +11,24 @@ export default async function handler(req, res) {
 
   try {
     // For demo purposes, we'll use a fixed userId
-    const userId = 'user123';
+    // const userId = 'user123';
 
     // Extract form data
-    const { name, email, destinationId, destinationName, visaType, documents } = req.body;
+    const { name, email, destinationId, destinationName, visaType, documents, userId } = req.body;
 
     // Validate required fields
     if (!name || !email) {
       return res.status(400).json({
         success: false,
         message: 'Name and email are required'
+      });
+    }
+
+    // Check for userId
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required. Please ensure you are logged in.'
       });
     }
 

@@ -21,9 +21,17 @@ export default function Dashboard() {
   // Fetch applications from the API
   useEffect(() => {
     const fetchApplications = async () => {
+      if (!user?.id) return; // Don't fetch if user ID is not available
+
       try {
         // Use axios instead of fetch for better error handling
-        const response = await axios.get('/api/applications');
+        const response = await axios.get('/api/applications/',
+          {
+            params: {
+              userId: user.id
+            }
+          }
+         );
         if (response.data.success) {
           setApplications(response.data.applications);
         }
@@ -34,7 +42,7 @@ export default function Dashboard() {
       }
     };
     fetchApplications();
-  }, []); // Only fetch on component mount
+  }, [user]); // Fetch when user changes
 
   if (loading || !user) {
     return (

@@ -56,6 +56,7 @@ export default async function handler(req, res) {
       phoneNumber: user.phoneNumber,
       role: user.role,
       projectCount: user.projectCount || 0,
+      isNewUser: !!user.isNewUser
     };
 
     // Add verification fields for agents
@@ -63,6 +64,11 @@ export default async function handler(req, res) {
       userResponse.verificationStatus = user.verificationStatus || 'approved'; // Default to approved for existing agents
       userResponse.verificationDate = user.verificationDate || new Date().toISOString();
       userResponse.acceptedApplications = user.acceptedApplications || [];
+    }
+
+    // Add user preferences if available
+    if (user.preferences) {
+      userResponse.preferences = user.preferences;
     }
 
     res.status(200).json({

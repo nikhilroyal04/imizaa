@@ -124,49 +124,19 @@ export async function deleteDocument(collectionName, id) {
 // Application-specific functions
 export async function getUserApplications(userId) {
   try {
-    console.log(`Getting applications for user: ${userId}`);
-
-    // Skip the composite index attempt and directly use the simple query
-    // This avoids the index error completely
-    const constraints = [
-      where('userId', '==', userId)
-    ];
-
-    console.log('Fetching applications with simple query');
-    const applications = await getDocuments(COLLECTIONS.APPLICATIONS, constraints);
-    console.log(`Found ${applications.length} applications`);
-
-    // Sort manually in memory using the ISO string date which is more reliable
-    return applications.sort((a, b) => {
-      // First try to use the ISO string date which is more reliable
-      if (a.submissionDateISO && b.submissionDateISO) {
-        return new Date(b.submissionDateISO) - new Date(a.submissionDateISO);
-      }
-
-      // Fall back to the Firestore timestamp if available
-      if (a.submissionDate && b.submissionDate) {
-        // Handle Firestore timestamps (objects with seconds and nanoseconds)
-        if (a.submissionDate.seconds && b.submissionDate.seconds) {
-          return b.submissionDate.seconds - a.submissionDate.seconds;
-        }
-
-        // Handle date strings
-        return new Date(b.submissionDate) - new Date(a.submissionDate);
-      }
-
-      // Last resort - use creation time if available
-      if (a.createdAt && b.createdAt) {
-        if (a.createdAt.seconds && b.createdAt.seconds) {
-          return b.createdAt.seconds - a.createdAt.seconds;
-        }
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      }
-
-      // If no dates are available, maintain original order
-      return 0;
-    });
+    const applicationsRef = collection(db, "applications");
+    let q;
+    if (userId) {
+      // User ke applications
+      q = query(applicationsRef, where("userId", "==", userId));
+    } else {
+      // Admin ke liye saare applications
+      q = query(applicationsRef);
+    }
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
-    console.error('Error getting user applications:', error);
+    console.error("Error getting user applications:", error);
     throw error;
   }
 }
