@@ -10,11 +10,8 @@ export default async function handler(req, res) {
   // GET - Retrieve a specific application
   if (req.method === 'GET') {
     try {
-      // For demo purposes, we'll use a fixed userId
-      const userId = 'user123';
-
-      // Try to fetch the application from Firestore
-      const application = await getApplicationById(id, userId);
+      // For admin/agent views, we don't need to check userId
+      const application = await getApplicationById(id);
 
       if (!application) {
         return res.status(404).json({
