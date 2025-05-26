@@ -283,7 +283,7 @@ export default function VisaApplicationForm({ destinationId: propDestinationId, 
             <h3 className="text-lg font-medium text-gray-700">Upload Documents</h3>
             {documentChecklist.map((doc, index) => (
               <div key={index} className="border rounded-md p-4 bg-gray-50">
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                   {doc}
                   {formData.documents[doc] && (
                     <FaCheckCircle className="text-green-500 inline ml-1" />
@@ -311,7 +311,7 @@ export default function VisaApplicationForm({ destinationId: propDestinationId, 
             <h3 className="text-lg font-medium text-gray-700">Upload Documents</h3>
 
             <div className="border rounded-md p-4 bg-gray-50">
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 Passport Photo
                 {formData.documents["Passport Photo"] && (
                   <FaCheckCircle className="text-green-500 inline ml-1" />
@@ -329,7 +329,7 @@ export default function VisaApplicationForm({ destinationId: propDestinationId, 
             </div>
 
             <div className="border rounded-md p-4 bg-gray-50">
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 Passport Front
                 {formData.documents["Passport Front"] && (
                   <FaCheckCircle className="text-green-500 inline ml-1" />
