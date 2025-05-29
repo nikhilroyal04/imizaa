@@ -151,6 +151,10 @@ export const AuthProvider = ({ children }) => {
           console.log('Agent user detected, redirecting to agent dashboard');
           console.log('Agent user data:', data.user);
           router.push('/agent');
+        } else if (data.user.role === 'employee') {
+          console.log('Employee user detected, redirecting to employee dashboard');
+          console.log('Employee user data:', data.user);
+          router.push('/employee');
         } else {
           console.log('Regular user detected');
           console.log('Regular user data:', data.user);
@@ -222,10 +226,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Register user
-  const register = async (username, email, phoneNumber, password, userType = 'user') => {
+  const register = async (username, email, phoneNumber, password, userType = 'user', additionalData = {}) => {
     try {
       setLoading(true);
       console.log('Attempting registration for:', email, 'as', userType);
+
+      const requestBody = {
+        username,
+        email,
+        phoneNumber,
+        password,
+        userType,
+        ...additionalData
+      };
 
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -233,7 +246,7 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache',
         },
-        body: JSON.stringify({ username, email, phoneNumber, password, userType }),
+        body: JSON.stringify(requestBody),
         credentials: 'include', // Include cookies in the request
       });
 
@@ -278,6 +291,9 @@ export const AuthProvider = ({ children }) => {
         } else if (data.user.role === 'agent') {
           console.log('Agent user detected, redirecting to agent dashboard');
           router.push('/agent');
+        } else if (data.user.role === 'employee') {
+          console.log('Employee user detected, redirecting to employee dashboard');
+          router.push('/employee');
         } else {
           console.log('Regular user detected');
 

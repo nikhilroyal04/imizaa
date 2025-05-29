@@ -60,6 +60,13 @@ export default async function handler(req, res) {
           userResponse.acceptedApplications = user.acceptedApplications || [];
         }
 
+        // Add specialization fields for employees
+        if (user.role === 'employee') {
+          userResponse.country = user.country;
+          userResponse.visaType = user.visaType;
+          userResponse.acceptedApplications = user.acceptedApplications || [];
+        }
+
         return res.status(200).json({
           success: true,
           user: userResponse
@@ -114,6 +121,13 @@ export default async function handler(req, res) {
     if (user.role === 'agent') {
       userResponse.verificationStatus = user.verificationStatus || 'approved'; // Default to approved for existing agents
       userResponse.verificationDate = user.verificationDate || new Date().toISOString();
+      userResponse.acceptedApplications = user.acceptedApplications || [];
+    }
+
+    // Add specialization fields for employees
+    if (user.role === 'employee') {
+      userResponse.country = user.country;
+      userResponse.visaType = user.visaType;
       userResponse.acceptedApplications = user.acceptedApplications || [];
     }
 

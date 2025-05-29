@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { username, email, phoneNumber, password, userType } = req.body;
+    const { username, email, phoneNumber, password, userType, country, visaTypes } = req.body;
 
     // Check if user already exists
     const userExists = await getUserByEmail(email);
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Determine user role based on userType
-    const role = userType === 'agent' ? 'agent' : 'user';
+    const role = userType === 'agent' ? 'agent' : userType === 'employee' ? 'employee' : 'user';
 
     // Create user in Firestore
     const userData = {
@@ -43,8 +43,14 @@ export default async function handler(req, res) {
         verificationStatus: 'pending',
         verificationDate: new Date().toISOString()
       }),
-      // Add a flag to indicate this is a new user who needs to select visa type
-      isNewUser: true
+      // For employees, store country and single visa type
+      ...(role === 'employee' && {
+        country,
+        visaType: visaTypes && visaTypes.length > 0 ? visaTypes[0] : null,
+        acceptedApplications: []
+      }),
+      // Add a flag to indicate this is a new user who needs to select visa type (only for regular users)
+      isNewUser: role === 'user'
     };
 
     const user = await createUser(userData);
@@ -58,20 +64,26 @@ export default async function handler(req, res) {
     // For debugging in production
     console.log('Signup successful, token set in cookie');
 
-    // Include verification status for agents
+    // Include role-specific data in response
     const userResponse = {
       id: user.id,
       username: user.username,
       email: user.email,
       phoneNumber: user.phoneNumber,
       role: user.role,
-      isNewUser: true, // Always true for new signups
+      isNewUser: user.isNewUser,
     };
 
     // Add verification fields for agents
     if (user.role === 'agent') {
       userResponse.verificationStatus = user.verificationStatus;
       userResponse.verificationDate = user.verificationDate;
+    }
+
+    // Add specialization fields for employees
+    if (user.role === 'employee') {
+      userResponse.country = user.country;
+      userResponse.visaType = user.visaType;
     }
 
     res.status(201).json({

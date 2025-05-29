@@ -3,8 +3,8 @@ import { verifyToken } from '@/lib/auth-firebase';
 import jwt from 'jsonwebtoken';
 
 // Define both the new and old JWT secrets for backward compatibility
-const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2023';
-const OLD_JWT_SECRET = 'your-production-key'; // The previous secret
+const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2025';
+const OLD_JWT_SECRET = 'immiza-secure-jwt-secret-key-2023'; // The previous secret
 
 export default async function handler(req, res) {
   // Only allow POST requests

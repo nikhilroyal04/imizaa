@@ -163,7 +163,7 @@ export default async function handler(req, res) {
 
     // If not authenticated after all checks
     if (!isAuthenticated) {
-      console.error('Authentication failed for agents API');
+      console.error('Authentication failed for employees API');
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -172,30 +172,70 @@ export default async function handler(req, res) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
-    // Get all agents
-    const agents = await getUsersByRole('agent');
+    // Get all employees
+    const employees = await getUsersByRole('employee');
 
-    // Process agents to ensure createdAt is properly formatted
-    const processedAgents = agents.map(agent => {
-      // Make a copy of the agent object
-      const processedAgent = { ...agent };
+    // Process employees to ensure createdAt is properly formatted and group by country
+    const processedEmployees = employees.map(employee => {
+      // Make a copy of the employee object
+      const processedEmployee = { ...employee };
 
       // If createdAt is a Firestore timestamp (has seconds and nanoseconds)
-      if (processedAgent.createdAt && typeof processedAgent.createdAt === 'object' && processedAgent.createdAt.seconds) {
+      if (processedEmployee.createdAt && typeof processedEmployee.createdAt === 'object' && processedEmployee.createdAt.seconds) {
         // Convert to ISO string for consistent handling on the client
-        const date = new Date(processedAgent.createdAt.seconds * 1000);
-        processedAgent.createdAt = date.toISOString();
+        const date = new Date(processedEmployee.createdAt.seconds * 1000);
+        processedEmployee.createdAt = date.toISOString();
       }
 
-      return processedAgent;
+      return processedEmployee;
     });
+
+    // Group employees by country and visa type
+    const groupedEmployees = {};
+
+    console.log('Processing employees for grouping:', processedEmployees.length);
+
+    processedEmployees.forEach(employee => {
+      // Normalize country name (capitalize first letter)
+      const country = employee.country
+        ? employee.country.charAt(0).toUpperCase() + employee.country.slice(1).toLowerCase()
+        : 'Unknown';
+
+      // Normalize visa type
+      const visaType = employee.visaType ? employee.visaType.toLowerCase() : 'work';
+
+      console.log(`Employee ${employee.username}: country=${country}, visaType=${visaType}`);
+
+      if (!groupedEmployees[country]) {
+        groupedEmployees[country] = {
+          work: [],
+          tourist: [],
+          student: [],
+          unknown: []
+        };
+      }
+
+      // Add employee to appropriate visa type category
+      if (groupedEmployees[country][visaType]) {
+        groupedEmployees[country][visaType].push(employee);
+      } else {
+        // Handle unknown visa types - put them in unknown category
+        console.log(`Unknown visa type ${visaType} for employee ${employee.username}, adding to unknown category`);
+        groupedEmployees[country]['unknown'].push(employee);
+      }
+    });
+
+    console.log('Final grouped employees:', JSON.stringify(groupedEmployees, null, 2));
 
     return res.status(200).json({
       success: true,
-      agents: processedAgents
+      employees: processedEmployees,
+      groupedEmployees,
+      totalCount: processedEmployees.length,
+      countriesCount: Object.keys(groupedEmployees).length
     });
   } catch (error) {
-    console.error('Error fetching agents:', error);
+    console.error('Error fetching employees:', error);
     return res.status(500).json({
       success: false,
       message: 'Something went wrong',

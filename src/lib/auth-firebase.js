@@ -127,8 +127,8 @@ export function onAuthStateChange(callback) {
 // Verify JWT token from request
 export async function verifyToken(req) {
   // Define both the new and old JWT secrets for backward compatibility
-  const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2023';
-  const OLD_JWT_SECRET = 'your-production-key'; // The previous secret
+  const JWT_SECRET = process.env.JWT_SECRET || 'immiza-secure-jwt-secret-key-2025';
+  const OLD_JWT_SECRET = 'immiza-secure-jwt-secret-key-2023'; // The previous secret
 
   try {
     // Get token from cookie
@@ -142,9 +142,15 @@ export async function verifyToken(req) {
     // Make sure token is a string and validate basic JWT format
     const tokenString = String(token);
 
+    // Check for invalid token formats
+    if (tokenString === '[object Promise]' || tokenString === '[object Object]') {
+      console.error('Invalid token format detected in cookie:', tokenString);
+      return null;
+    }
+
     // Basic validation: JWT tokens should have 3 parts separated by dots
     if (!tokenString || !tokenString.includes('.') || tokenString.split('.').length !== 3) {
-      console.error('Malformed token format:', tokenString);
+      console.error('Malformed token format:', tokenString.substring(0, 50) + '...');
       return null;
     }
 

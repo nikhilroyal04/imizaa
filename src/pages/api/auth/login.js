@@ -66,6 +66,13 @@ export default async function handler(req, res) {
       userResponse.acceptedApplications = user.acceptedApplications || [];
     }
 
+    // Add specialization fields for employees
+    if (user.role === 'employee') {
+      userResponse.country = user.country;
+      userResponse.visaType = user.visaType;
+      userResponse.acceptedApplications = user.acceptedApplications || [];
+    }
+
     // Add user preferences if available
     if (user.preferences) {
       userResponse.preferences = user.preferences;

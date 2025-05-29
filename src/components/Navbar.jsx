@@ -89,6 +89,24 @@ const Navbar = () => {
                       Logout
                     </button>
                   </div>
+                ) : user.role === 'employee' ? (
+                  // Employee users
+                  <div className="flex items-center space-x-4">
+                    <Link
+                      href="/employee"
+                      className="text-gray-700 hover:text-gray-900 font-medium flex items-center"
+                    >
+                      <FaTachometerAlt className="mr-2 text-gray-500" />
+                      Employee Dashboard
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="text-gray-700 hover:text-gray-900 font-medium flex items-center cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-md transition-colors"
+                    >
+                      <FaSignOutAlt className="mr-2 text-gray-500" />
+                      Logout
+                    </button>
+                  </div>
                 ) : (
                   // Regular users with dropdown and WhatsApp button
                   <div className="flex items-center space-x-4">
@@ -254,6 +272,17 @@ const Navbar = () => {
                     <div className="flex items-center">
                       <FaTachometerAlt className="mr-3 text-gray-500" />
                       Agent Dashboard
+                    </div>
+                  </Link>
+                ) : user.role === 'employee' ? (
+                  // Employee links
+                  <Link
+                    href="/employee"
+                    className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    <div className="flex items-center">
+                      <FaTachometerAlt className="mr-3 text-gray-500" />
+                      Employee Dashboard
                     </div>
                   </Link>
                 ) : (

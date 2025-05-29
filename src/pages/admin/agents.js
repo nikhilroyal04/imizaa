@@ -29,9 +29,20 @@ export default function AgentManagement() {
         if (typeof window !== 'undefined') {
           const userData = localStorage.getItem('user');
           if (userData) {
-            const parsedUser = JSON.parse(userData);
-            if (parsedUser && parsedUser.token) {
-              authToken = parsedUser.token;
+            try {
+              const parsedUser = JSON.parse(userData);
+              if (parsedUser && parsedUser.token) {
+                // Ensure token is a string and not a Promise or object
+                authToken = String(parsedUser.token);
+
+                // Validate token format
+                if (authToken === '[object Promise]' || authToken === '[object Object]' || authToken === 'undefined' || authToken === 'null') {
+                  console.error('Invalid token format in localStorage:', authToken);
+                  authToken = '';
+                }
+              }
+            } catch (parseError) {
+              console.error('Error parsing user data from localStorage:', parseError);
             }
           }
         }
