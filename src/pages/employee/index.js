@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-import { FaPassport, FaUser, FaGlobe } from 'react-icons/fa';
+import { FaPassport, FaUser, FaGlobe, FaEye } from 'react-icons/fa';
 import EmployeeLayout from '@/components/employee/EmployeeLayout';
 
 export default function EmployeeDashboard() {
@@ -92,13 +92,37 @@ export default function EmployeeDashboard() {
 
 
   // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  const formatDate = (firestoreDate) => {
+    if (!firestoreDate) return 'N/A';
+
+    // Handle Firestore Timestamp objects
+    if (firestoreDate && firestoreDate.seconds) {
+      return new Date(firestoreDate.seconds * 1000).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    // Handle ISO strings
+    if (typeof firestoreDate === 'string') {
+      return new Date(firestoreDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    // Handle regular Date objects
+    if (firestoreDate instanceof Date) {
+      return firestoreDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    return 'N/A';
   };
 
   // Get status color
@@ -136,31 +160,32 @@ export default function EmployeeDashboard() {
           <h1 className="text-3xl font-bold text-gray-900">Employee Dashboard</h1>
         </div>
 
-        {/* Employee Info */}
-        <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Your Specialization</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center">
-              <FaGlobe className="text-rose-500 mr-2" />
-              <span className="text-gray-700">
-                <strong>Country:</strong> {user.country || 'Not specified'}
-              </span>
-            </div>
-            <div className="flex items-center">
-              <FaPassport className="text-rose-500 mr-2" />
-              <span className="text-gray-700">
-                <strong>Visa Type:</strong> {
-                  user.visaType
-                    ? getVisaTypeById(user.visaType)
-                    : 'Not specified'
-                }
-              </span>
+        {/* Employee Info and Stats in one row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Specialization Info */}
+          <div className="lg:col-span-2 bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Your Specialization</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center">
+                <FaGlobe className="text-rose-500 mr-2" />
+                <span className="text-gray-700">
+                  <strong>Country:</strong> {user.country || 'Not specified'}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <FaPassport className="text-rose-500 mr-2" />
+                <span className="text-gray-700">
+                  <strong>Visa Type:</strong> {
+                    user.visaType
+                      ? getVisaTypeById(user.visaType)
+                      : 'Not specified'
+                  }
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Employee Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Employee Stats */}
           <div className="bg-white shadow rounded-lg p-6 border-l-4 border-blue-500">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-blue-100 mr-4">
@@ -170,20 +195,6 @@ export default function EmployeeDashboard() {
                 <div className="text-sm font-medium text-gray-500">My Assigned Applications</div>
                 <div className="mt-1 text-3xl font-semibold text-gray-900">
                   {filteredApplications.length}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white shadow rounded-lg p-6 border-l-4 border-green-500">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100 mr-4">
-                <FaUser className="h-6 w-6 text-green-500" />
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-500">Processed Applications</div>
-                <div className="mt-1 text-3xl font-semibold text-gray-900">
-                  {filteredApplications.filter(app => app.currentStatus && app.currentStatus !== 'Document Submitted').length}
                 </div>
               </div>
             </div>
@@ -221,13 +232,15 @@ export default function EmployeeDashboard() {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Submitted
                   </th>
-
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {isLoading ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-4 text-center">
+                    <td colSpan="6" className="px-6 py-4 text-center">
                       <div className="flex justify-center">
                         <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-rose-500"></div>
                       </div>
@@ -235,7 +248,7 @@ export default function EmployeeDashboard() {
                   </tr>
                 ) : filteredApplications.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
                       No applications match your specialization ({user.country || 'No country'} - {user.visaType ? getVisaTypeById(user.visaType) : 'No visa type'})
                     </td>
                   </tr>
@@ -262,7 +275,16 @@ export default function EmployeeDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(application.submittedAt)}
+                        {formatDate(application.submissionDateISO || application.submissionDate)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button
+                          onClick={() => router.push(`/employee/application/${application.id}`)}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-colors"
+                        >
+                          <FaEye className="mr-1 h-3 w-3" />
+                          View Details
+                        </button>
                       </td>
                     </tr>
                   ))
