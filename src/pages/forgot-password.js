@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import { auth } from '@/lib/firebase';
-import { sendPasswordResetEmail } from 'firebase/auth';
 import { useRouter } from 'next/router';
-export default function ForgotPassword() {
 
-    
+export default function ForgotPassword() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [error, setError] = useState(null);
@@ -17,12 +14,26 @@ export default function ForgotPassword() {
         setError(null);
         setSuccess(null);
         try {
-            await sendPasswordResetEmail(auth, email);
-            setSuccess('Password reset email sent');
-            setEmail('');
-            router.push('/login');
+            const response = await fetch('/api/auth/send-password-reset', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setSuccess(data.message);
+                setEmail('');
+                // Optionally redirect after a delay
+                // setTimeout(() => router.push('/login'), 3000);
+            } else {
+                setError(data.message);
+            }
         } catch (error) {
-            setError(error.message);
+            setError('An unexpected error occurred. Please try again.');
         } finally {
             setIsLoading(false);
         }
